@@ -401,12 +401,13 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   border-bottom: 1px solid var(--rule-soft);
 }
 .visit-date {
-  font-family: 'Fraunces', serif;
-  font-variation-settings: 'opsz' 144;
-  font-size: 1.55rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1.35rem;
   font-weight: 600;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.01em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 .visit-date .y { color: var(--ink-3); font-weight: 400; }
 .visit-mileage {
@@ -728,15 +729,97 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 
 /* ── print ───────────────────────────────────────────── */
 @media print {
-  @page { margin: 16mm; }
-  body { background: white !important; color: black; }
+  @page { margin: 14mm; size: A4; }
+
+  body {
+    background: white !important;
+    color: #000 !important;
+    font-size: 10.5pt;
+    line-height: 1.42;
+    -webkit-print-color-adjust: economy;
+    print-color-adjust: economy;
+  }
   body::before { display: none !important; }
-  header, footer, .no-print, .visit-actions { display: none !important; }
-  .visit, .sheet, .input-group, .field-block, .car-block { box-shadow: none; border-color: #999; break-inside: avoid; page-break-inside: avoid; }
-  .stamp { color: black !important; }
-  body.print-visit-only .visit { display: none; }
-  body.print-visit-only .visit.print-target { display: block; }
-  body.print-visit-only .section-head { display: none; }
+
+  /* Hide UI */
+  header, footer, .no-print, .visit-actions,
+  .hero-actions, .search, .section-head .meta { display: none !important; }
+
+  /* Neutralize paper backgrounds */
+  .sheet, .visit, .input-group, .field-block, .car-block,
+  .notes-block, .photo-thumb, .car-plate, .photo-edit, .stat {
+    background: white !important;
+    box-shadow: none !important;
+    border-color: #c8c8c8 !important;
+    border-radius: 2px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .car-block::before { display: none !important; }
+
+  /* Ledger neutral */
+  .ledger tbody td { border-color: #e0e0e0 !important; }
+  .ledger thead th { border-color: #999 !important; background: white !important; color: #000 !important; }
+
+  /* Stamps as outlined badges */
+  .stamp { color: #000 !important; border-color: #000 !important; background: white !important; }
+
+  /* Tighter typography */
+  .page-head { padding: 0; }
+  .hero { padding: 0 0 14px; }
+  .hero-meta { font-size: 8pt; margin-bottom: 8px; color: #444 !important; }
+  .hero-meta .num-badge { color: #000 !important; }
+  .hero-name { font-size: 26pt !important; line-height: 1.02; }
+  .hero-given { font-size: 11pt !important; margin-top: 4px; }
+  .hero-phone { font-size: 11pt !important; margin-top: 8px; color: #000 !important; }
+
+  .car-block { margin: 14px 0; padding: 12px 16px; page-break-after: avoid; }
+  .car-name { font-size: 14pt !important; }
+  .car-meta { font-size: 9pt !important; }
+  .car-plate { font-size: 11pt !important; padding: 6px 10px; border-color: #000 !important; border-width: 1.5px !important; }
+
+  .section-head { margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #888 !important; page-break-after: avoid; }
+  .h2 { font-size: 13pt !important; }
+
+  .visit { margin-bottom: 10px; }
+  .visit-head { padding: 10px 16px; gap: 16px; border-bottom-color: #d4d4d4 !important; }
+  .visit-date { font-size: 14pt !important; }
+  .visit-mileage { font-size: 9.5pt !important; }
+  .visit-total { font-size: 11pt !important; }
+
+  .visit-body { padding: 12px 16px 14px; }
+  .field-row { padding: 7px 0; grid-template-columns: 150px 1fr; gap: 16px; border-bottom-color: #e8e8e8 !important; }
+  .field-row dt { font-size: 7.5pt !important; color: #555 !important; }
+  .field-row dd { font-size: 10.5pt !important; line-height: 1.45; }
+
+  .totals { font-size: 9.5pt !important; padding-top: 10px; margin-top: 12px; border-top-color: #d4d4d4 !important; }
+  .totals .lab { color: #555 !important; }
+  .totals .grand-lab, .totals .grand-val { font-size: 11pt !important; border-top-color: #888 !important; color: #000 !important; }
+
+  /* Photos: 3 columns, contained heights */
+  .photos { margin-top: 14px; padding-top: 10px; border-top-color: #d4d4d4 !important; }
+  .photos-head { font-size: 7.5pt !important; margin-bottom: 6px; color: #555 !important; }
+  .photos-head .accent { color: #000 !important; }
+  .photo-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .photo-thumb img { max-height: 4cm; }
+  .photo-thumb .caption { font-size: 8.5pt; padding: 4px 7px; min-height: 0; line-height: 1.3; color: #333 !important; }
+
+  /* Notes */
+  .notes-block { padding: 10px 14px; font-size: 10pt; border-style: solid !important; color: #000 !important; }
+  .notes-block .lab { font-size: 7.5pt !important; color: #555 !important; }
+
+  /* Single visit print mode */
+  body.print-visit-only .hero-actions,
+  body.print-visit-only .visit-actions { display: none !important; }
+  body.print-visit-only .visit { display: none !important; }
+  body.print-visit-only .visit.print-target { display: block !important; page-break-before: avoid; }
+  body.print-visit-only .section-head { display: none !important; }
+
+  /* Page-break safety */
+  h1, h2, h3, .h1, .h2 { page-break-after: avoid; }
+  .visit-head { page-break-after: avoid; }
+
+  a { color: #000 !important; text-decoration: none !important; border-bottom: none !important; }
 }
 </style>
 </head>
