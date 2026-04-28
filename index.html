@@ -9,10 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper:        #f6f1e6;
-  --paper-soft:   #ede4cf;
+  --paper:        #ede5d2;
+  --paper-soft:   #faf4e0;
   --paper-deep:   #e0d4b4;
-  --paper-input:  #fbf7ec;
+  --paper-input:  #fefaef;
   --ink:          #211f1a;
   --ink-2:        #524d44;
   --ink-3:        #847f73;
@@ -25,8 +25,8 @@
   --olive:        #5d6b27;
   --olive-soft:   rgba(93, 107, 39, 0.10);
   --brass:        #8a6c2c;
-  --shadow-card:  0 1px 0 rgba(28,26,23,0.04), 0 0 0 1px rgba(28,26,23,0.06);
-  --shadow-lift:  0 6px 18px -8px rgba(28,26,23,0.18), 0 0 0 1px rgba(28,26,23,0.08);
+  --shadow-card:  none;
+  --shadow-lift:  none;
   --ease:         cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -105,7 +105,7 @@ input, select, textarea { font: inherit; color: inherit; }
 /* ── header ──────────────────────────────────────────── */
 header {
   border-bottom: 1px solid var(--rule);
-  background-color: rgba(246, 241, 230, 0.85);
+  background-color: rgba(237, 229, 210, 0.85);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   position: sticky; top: 0; z-index: 30;
@@ -160,10 +160,9 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   white-space: nowrap;
 }
 .btn-primary { background: var(--ink); color: var(--paper); }
-.btn-primary:hover { background: var(--seal); }
-.btn-primary:active { transform: translateY(1px); }
+.btn-primary:hover { background: #3a352c; color: #fff; }
 .btn-ghost { color: var(--ink-2); border: 1px solid var(--rule); background: transparent; }
-.btn-ghost:hover { color: var(--ink); border-color: var(--ink-2); background: var(--paper-soft); }
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink); background: rgba(255,255,255,0.4); }
 .btn-text { color: var(--ink-2); padding: 9px 12px; }
 .btn-text:hover { color: var(--seal); }
 .btn-danger { color: var(--seal); }
@@ -184,7 +183,8 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   background: transparent;
   transition: transform 0.18s var(--ease);
 }
-.stamp:hover { transform: rotate(-1.5deg); }
+.stamp[data-vid] { cursor: pointer; }
+.stamp[data-vid]:hover { background: rgba(0,0,0,0.05); }
 .stamp-active { color: var(--seal); }
 .stamp-ready  { color: var(--olive); }
 .stamp-done   { color: var(--ink-3); }
@@ -317,7 +317,7 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   border: 1px solid var(--rule);
   border-radius: 2px;
   margin: 28px 0 24px;
-  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  transition: border-color 0.18s var(--ease);
   position: relative;
 }
 .car-block::before {
@@ -325,7 +325,7 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   position: absolute; left: 0; top: 0; bottom: 0;
   width: 3px; background: var(--ink);
 }
-.car-block:hover { box-shadow: var(--shadow-lift); }
+.car-block:hover { border-color: var(--ink-3); }
 .car-name {
   font-family: 'Fraunces', serif;
   font-variation-settings: 'opsz' 60;
@@ -389,9 +389,9 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   border: 1px solid var(--rule);
   margin-bottom: 22px;
   position: relative;
-  transition: box-shadow 0.22s var(--ease), transform 0.22s var(--ease);
+  transition: border-color 0.18s var(--ease);
 }
-.visit:hover { box-shadow: var(--shadow-lift); }
+.visit:hover { border-color: var(--ink-3); }
 .visit-head {
   display: grid;
   grid-template-columns: auto 1fr auto auto;
@@ -489,9 +489,9 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   border-radius: 2px;
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+  transition: border-color 0.18s var(--ease);
 }
-.photo-thumb:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.photo-thumb:hover { border-color: var(--ink-3); }
 .photo-thumb img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; }
 .photo-thumb .caption {
   font-family: 'Fraunces', serif;
@@ -707,6 +707,48 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 .foot a { color: var(--ink-2); border-bottom: 1px solid var(--rule); transition: color 0.15s, border-color 0.15s; }
 .foot a:hover { color: var(--seal); border-bottom-color: var(--seal); }
 
+/* ── status popover ──────────────────────────────────── */
+.status-popover {
+  position: absolute;
+  background: var(--paper-soft);
+  border: 1px solid var(--ink-3);
+  border-radius: 2px;
+  padding: 5px;
+  min-width: 180px;
+  z-index: 1000;
+  animation: popIn 0.14s var(--ease);
+}
+@keyframes popIn { from { opacity: 0; transform: translateY(-4px); } }
+.popover-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 6px 10px 8px;
+  border-bottom: 1px dashed var(--rule-soft);
+  margin-bottom: 4px;
+}
+.popover-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.92rem;
+  padding: 9px 12px;
+  text-align: left;
+  border-radius: 0;
+  white-space: nowrap;
+  transition: background 0.12s;
+  color: var(--ink);
+}
+.popover-btn:hover { background: rgba(0,0,0,0.05); }
+.popover-btn.current { background: rgba(0,0,0,0.06); font-weight: 600; }
+.popover-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.popover-btn .dot-active { background: var(--seal); }
+.popover-btn .dot-ready  { background: var(--olive); }
+.popover-btn .dot-done   { background: var(--ink-3); }
+
 /* ── flash ───────────────────────────────────────────── */
 .flash {
   position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
@@ -717,7 +759,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   letter-spacing: 0.14em;
   text-transform: uppercase;
   z-index: 200;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  border: 1px solid var(--ink);
   animation: flashIn 0.3s var(--ease), flashOut 0.3s var(--ease) 1.7s forwards;
 }
 @keyframes flashIn { from { opacity: 0; transform: translate(-50%, -8px); } }
@@ -834,7 +876,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     <nav class="head-nav">
       <a href="#/" class="nav-link" data-route="dashboard">Сводка</a>
       <a href="#/cards" class="nav-link" data-route="cards">Картотека</a>
-      <a href="#/cards/new" class="btn btn-primary" style="margin-left:10px">+ Карточка</a>
+      <a href="#/cards/new" class="btn btn-primary" style="margin-left:10px">+ Новый клиент</a>
     </nav>
   </div>
 </header>
@@ -899,7 +941,7 @@ const STATUS = {
   ready:       { label: 'Готов',    cls: 'stamp-ready'  },
   delivered:   { label: 'Выдан',    cls: 'stamp-done'   },
 };
-const stamp = (s) => `<span class="stamp ${STATUS[s]?.cls || 'stamp-done'}">${STATUS[s]?.label || s}</span>`;
+const stamp = (s, vid) => `<span class="stamp ${STATUS[s]?.cls || 'stamp-done'}"${vid ? ` data-vid="${vid}" data-status="${s}" role="button" tabindex="0" title="клик чтобы изменить статус"` : ''}>${STATUS[s]?.label || s}</span>`;
 function plural(n, forms) { const a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return forms[2]; if (b > 1 && b < 5) return forms[1]; if (b === 1) return forms[0]; return forms[2]; }
 function flash(msg) { const f = document.createElement('div'); f.className = 'flash'; f.textContent = msg; document.body.appendChild(f); setTimeout(() => f.remove(), 2000); }
 
@@ -972,8 +1014,10 @@ async function dispatch() {
       r.keys.forEach((k, i) => params[k] = m[i+1]);
       app.innerHTML = '';
       try {
+        clearPopover();
         await r.handler(params);
         animatePageEnter();
+        bindStatusStamps();
       } catch (err) {
         app.innerHTML = `<div class="empty"><div class="empty-title">Сбой: ${e(err.message)}</div></div>`;
         console.error(err);
@@ -1029,7 +1073,7 @@ function visitHTML(v, opts = {}) {
       <div class="visit-head">
         ${dateBlock}
         ${v.mileage ? `<div class="visit-mileage">${fmtKm(v.mileage)}</div>` : '<div></div>'}
-        ${stamp(v.status)}
+        ${stamp(v.status, v.id)}
         ${showTotal ? `<div class="visit-total">${fmtMoney(due)}</div>` : '<div></div>'}
       </div>
       <div class="visit-body">
@@ -1079,6 +1123,53 @@ function bindRowClicks() {
   });
 }
 
+let activePopover = null;
+function clearPopover() { if (activePopover) { activePopover.remove(); activePopover = null; } }
+function bindStatusStamps() {
+  document.querySelectorAll('.stamp[data-vid]').forEach(s => {
+    s.addEventListener('click', (ev) => { ev.stopPropagation(); openStatusPopover(s); });
+    s.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openStatusPopover(s); } });
+  });
+}
+function openStatusPopover(anchor) {
+  clearPopover();
+  const vid = anchor.dataset.vid;
+  const current = anchor.dataset.status;
+  const pop = document.createElement('div');
+  pop.className = 'status-popover';
+  pop.innerHTML = `
+    <div class="popover-title">Статус визита</div>
+    ${Object.entries(STATUS).map(([k, v]) => {
+      const dot = v.cls.replace('stamp-', '');
+      return `<button type="button" class="popover-btn ${current === k ? 'current' : ''}" data-set="${k}"><span class="dot dot-${dot}"></span>${v.label}</button>`;
+    }).join('')}
+  `;
+  document.body.appendChild(pop);
+  activePopover = pop;
+  // position
+  const rect = anchor.getBoundingClientRect();
+  const popW = pop.offsetWidth;
+  let left = rect.left + window.scrollX;
+  if (left + popW > window.innerWidth - 12) left = window.innerWidth - popW - 12;
+  pop.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  pop.style.left = left + 'px';
+  pop.querySelectorAll('[data-set]').forEach(b => {
+    b.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      const newStatus = b.dataset.set;
+      if (newStatus === current) { clearPopover(); return; }
+      const v = await repo.get('visits', vid);
+      if (v) { v.status = newStatus; await repo.put('visits', v); flash('Статус обновлён'); }
+      clearPopover();
+      dispatch();
+    });
+  });
+  setTimeout(() => {
+    const closer = (e) => { if (!pop.contains(e.target)) { clearPopover(); document.removeEventListener('click', closer); } };
+    document.addEventListener('click', closer);
+  }, 50);
+}
+
 // ═══ Routes ══════════════════════════════════════════
 
 route('/', async () => {
@@ -1107,7 +1198,7 @@ route('/', async () => {
         <div class="empty-title">Картотека пуста</div>
         <div class="empty-hint">Заведите первую карточку или загрузите демо</div>
         <div style="margin-top: 22px; display: flex; gap: 8px; justify-content: center;">
-          <a href="#/cards/new" class="btn btn-primary">+ Новая карточка</a>
+          <a href="#/cards/new" class="btn btn-primary">+ Новый клиент</a>
           <button class="btn btn-ghost" id="seed-btn">Загрузить демо</button>
         </div>
       </div>
@@ -1119,7 +1210,7 @@ route('/', async () => {
         ${recent.length === 0 ? `<div class="empty"><div class="empty-title">Записей ещё нет</div></div>` : `
           <table class="ledger">
             <thead><tr><th style="width:90px">Дата</th><th>Клиент</th><th>Машина</th><th>Гос. номер</th><th class="right">Стоимость</th><th>Статус</th></tr></thead>
-            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${fmtMoney(v.cost)}</td><td>${stamp(v.status)}</td></tr>`; }).join('')}</tbody>
+            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
           </table>
         `}
       </div>
@@ -1141,7 +1232,7 @@ function activeBlock(title, visits, cardById, accent) {
     </div>
     <div class="sheet">
       <table class="ledger">
-        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right">${fmtKm(v.mileage)}</td><td class="right num">${fmtMoney(v.cost)}</td></tr>`; }).join('')}</tbody>
+        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right">${v.mileage ? fmtKm(v.mileage) : ''}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
       </table>
     </div>
   `;
