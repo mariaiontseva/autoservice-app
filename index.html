@@ -865,55 +865,83 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   .ledger tr {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 4px 14px;
-    padding: 14px 16px 14px;
+    align-items: start;
+    row-gap: 3px;
+    column-gap: 14px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--rule-soft);
-    position: relative;
-    align-items: baseline;
   }
   .ledger tr:last-child { border-bottom: none; }
   .ledger tr.click { cursor: pointer; }
-  .ledger tr.click:active { background: rgba(0,0,0,0.03); }
+  .ledger tr.click:active { background: rgba(0,0,0,0.04); }
+
   .ledger td {
     display: block;
     padding: 0 !important;
     border: none !important;
     text-align: left !important;
     color: var(--ink-3);
-    font-size: 0.84rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
   .ledger td:empty { display: none; }
-  .ledger td.ledger-num:first-child { display: none; } /* hide # column */
+
+  /* Hide # column (first ledger-num cell with the 001 number) */
+  .ledger tr > td.ledger-num:first-child { display: none; }
+
+  /* Name big — explicit grid placement */
   .ledger .ledger-name {
     grid-column: 1;
+    grid-row: 1;
     font-size: 1.05rem;
     color: var(--ink);
     font-weight: 600;
-    letter-spacing: -0.005em;
-    line-height: 1.2;
-    margin-bottom: 2px;
+    line-height: 1.25;
   }
-  .ledger td.right { text-align: right !important; }
+
+  /* Stamp top-right */
   .ledger td:has(.stamp) {
-    grid-row: 1;
     grid-column: 2;
-    text-align: right !important;
+    grid-row: 1;
+    align-self: start;
   }
-  .ledger td.right.num,
-  .ledger td:nth-last-child(2) {
-    grid-row: 1;
+
+  /* When stamp present: cost/count on row 2 right (BELOW stamp, no overlap) */
+  .ledger tr:has(.stamp) td.right.num {
     grid-column: 2;
+    grid-row: 2;
+    text-align: right !important;
     color: var(--ink-2);
     font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
   }
-  .ledger td.ledger-num {
-    color: var(--ink-3);
-    font-size: 0.78rem;
+  /* When no stamp: count goes top-right */
+  .ledger tr:not(:has(.stamp)) td.right.num {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right !important;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+    align-self: center;
+    font-variant-numeric: tabular-nums;
   }
-  .ledger td.ledger-plate { font-size: 0.82rem; }
-  .ledger td.ledger-phone { font-size: 0.82rem; }
-  .ledger td.ledger-phone a { color: var(--ink-2); }
+
+  /* Hide bare mileage cells on mobile (too cluttered) */
+  .ledger td.right:not(.num) { display: none; }
+
+  /* Force all other cells to column 1 (so they don't drift to col 2) */
+  .ledger td:not(.ledger-name):not(.right):not(:has(.stamp)) {
+    grid-column: 1;
+  }
+
+  /* Visual styling for left-column cells */
+  .ledger .ledger-plate { font-size: 0.82rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .ledger .ledger-phone { font-size: 0.82rem; color: var(--ink-2); }
+  .ledger .ledger-phone a { color: var(--ink-2); }
+  .ledger td.ledger-num { font-size: 0.78rem; color: var(--ink-3); }
+
+  /* Hide empty placeholder divs in visit-head */
+  .visit-head > div:empty { display: none; }
 
   /* Search */
   .search { padding: 4px 6px 4px 14px; margin-bottom: 16px; }
