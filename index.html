@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Автосервис · Картотека</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:        #f3ebd9;
+  --paper-soft:   #ebe1c8;
+  --paper-deep:   #e2d6b6;
+  --paper-input:  #faf4e4;
+  --ink:          #1c1a17;
+  --ink-2:        #4a473f;
+  --ink-3:        #7a766c;
+  --ink-4:        #a8a395;
+  --rule:         #b8ad8a;
+  --rule-soft:    #d2c9a9;
+  --seal:         #9a2410;
+  --seal-soft:    rgba(154, 36, 16, 0.07);
+  --seal-bg:      #f5d8cd;
+  --olive:        #5e6b1f;
+  --olive-soft:   rgba(94, 107, 31, 0.10);
+  --brass:        #8a6c2c;
+  --shadow-card:  0 1px 0 rgba(28,26,23,0.04), 0 0 0 1px rgba(28,26,23,0.06);
+  --shadow-lift:  0 6px 18px -8px rgba(28,26,23,0.18), 0 0 0 1px rgba(28,26,23,0.08);
+  --ease:         cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(at 8% 4%, rgba(255,250,235,0.6), transparent 35%),
+    radial-gradient(at 92% 96%, rgba(154, 36, 16, 0.025), transparent 50%);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+}
+main, header, footer { position: relative; z-index: 1; }
+
+a { color: inherit; text-decoration: none; transition: color 0.15s var(--ease); }
+a:hover { color: var(--seal); }
+button { cursor: pointer; font: inherit; border: none; background: none; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+
+/* ── typography ──────────────────────────────────────── */
+.serif { font-family: 'Fraunces', 'PT Serif', Georgia, serif; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+.mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.muted { color: var(--ink-3); }
+.faint { color: var(--ink-4); }
+.num   { font-variant-numeric: tabular-nums; }
+.right { text-align: right; }
+
+.h1 {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144, 'SOFT' 40;
+  font-size: clamp(2rem, 4.6vw, 2.7rem);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  margin: 0;
+}
+.h2 {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 60;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.eyebrow, .label-mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+/* ── layout ──────────────────────────────────────────── */
+.shell { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
+@media (max-width: 720px) { .shell { padding: 0 18px; } }
+
+/* ── header ──────────────────────────────────────────── */
+header {
+  border-bottom: 1px solid var(--rule);
+  background-color: rgba(243, 235, 217, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  position: sticky; top: 0; z-index: 30;
+}
+.head-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  padding: 20px 0 18px;
+}
+.brand { display: flex; align-items: baseline; gap: 18px; line-height: 1; }
+.brand-mark {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.brand-mark .dot { color: var(--seal); padding: 0 4px; }
+.brand-sub {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.95rem;
+  color: var(--ink-3);
+}
+
+nav.head-nav { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 8px 14px;
+  color: var(--ink-2);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.18s var(--ease), color 0.18s var(--ease);
+}
+.nav-link:hover { color: var(--ink); border-bottom-color: var(--ink-4); }
+.nav-link.active { color: var(--ink); border-bottom-color: var(--seal); }
+
+/* ── buttons (square, CAPS, mono) ────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem; font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 9px 16px;
+  border-radius: 2px;
+  transition: transform 0.08s, box-shadow 0.18s var(--ease), background 0.18s var(--ease), color 0.18s var(--ease);
+  white-space: nowrap;
+}
+.btn-primary { background: var(--ink); color: var(--paper); }
+.btn-primary:hover { background: var(--seal); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-ghost { color: var(--ink-2); border: 1px solid var(--rule); background: transparent; }
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink-2); background: var(--paper-soft); }
+.btn-text { color: var(--ink-2); padding: 9px 12px; }
+.btn-text:hover { color: var(--seal); }
+.btn-danger { color: var(--seal); }
+.btn-danger:hover { background: var(--seal-soft); }
+.btn-sm { padding: 6px 12px; font-size: 0.68rem; }
+
+/* ── stamps ──────────────────────────────────────────── */
+.stamp {
+  display: inline-flex; align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  padding: 4px 10px 3px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  background: transparent;
+  transition: transform 0.18s var(--ease);
+}
+.stamp:hover { transform: rotate(-1.5deg); }
+.stamp-active { color: var(--seal); }
+.stamp-ready  { color: var(--olive); }
+.stamp-done   { color: var(--ink-3); }
+
+/* ── sheet (paper card) ──────────────────────────────── */
+.sheet {
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: var(--shadow-card);
+}
+.sheet-pad { padding: 22px 26px; }
+
+/* ── ledger table ────────────────────────────────────── */
+.ledger { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ledger thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 500;
+  color: var(--ink-3);
+  text-align: left;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.ledger tbody td { padding: 14px 16px; border-bottom: 1px dashed var(--rule-soft); vertical-align: middle; }
+.ledger tbody tr:last-child td { border-bottom: none; }
+.ledger tbody tr.click { cursor: pointer; transition: background 0.15s var(--ease); }
+.ledger tbody tr.click:hover { background: rgba(154,36,16,0.04); }
+.ledger-num { font-family: 'JetBrains Mono', monospace; color: var(--ink-3); font-size: 0.78rem; letter-spacing: 0.04em; }
+.ledger-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.04rem; letter-spacing: -0.005em; }
+.ledger-plate, .ledger-phone { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--ink-2); letter-spacing: 0.02em; }
+
+/* ── search ──────────────────────────────────────────── */
+.search {
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--rule);
+  background: rgba(255,255,255,0.5);
+  padding: 4px 6px 4px 14px;
+  margin-bottom: 18px;
+  border-radius: 2px;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.search:focus-within { border-color: var(--ink-2); background: rgba(255,255,255,0.7); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
+.search svg { width: 16px; height: 16px; color: var(--ink-3); flex-shrink: 0; }
+.search input {
+  flex: 1;
+  border: none; background: none; outline: none;
+  padding: 13px 4px;
+  font-size: 0.95rem;
+}
+.search input::placeholder { color: var(--ink-4); }
+.search-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--ink-3);
+  letter-spacing: 0.1em;
+  padding: 0 14px 0 4px;
+  border-left: 1px solid var(--rule-soft);
+}
+
+/* ── stats ───────────────────────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; margin: 28px 0 36px; }
+.stat { border-top: 2px solid var(--ink); padding-top: 14px; }
+.stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-3); font-weight: 500; }
+.stat-value { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 144; font-size: 2.4rem; font-weight: 600; margin-top: 6px; line-height: 1; letter-spacing: -0.02em; }
+.stat-value.seal  { color: var(--seal); }
+.stat-value.olive { color: var(--olive); }
+
+/* ── page header ─────────────────────────────────────── */
+.page-head { padding: 36px 0 22px; }
+.crumbs {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  margin-bottom: 12px;
+}
+.lede { color: var(--ink-3); margin-top: 4px; max-width: 60ch; }
+.title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+
+/* ── card detail ─────────────────────────────────────── */
+.hero { padding: 8px 0 22px; }
+.hero-meta {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+}
+.hero-meta .num-badge { color: var(--seal); font-weight: 700; }
+.hero-meta .sep { color: var(--ink-4); }
+.hero-name {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  font-size: clamp(2.6rem, 6vw, 3.8rem);
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.hero-given {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.4em;
+  color: var(--ink-2);
+  margin-top: 6px;
+  letter-spacing: -0.01em;
+}
+.hero-phone {
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.hero-actions { display: flex; gap: 6px; margin-top: 22px; flex-wrap: wrap; }
+
+.car-block {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+  padding: 22px 28px;
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  margin: 28px 0 24px;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  position: relative;
+}
+.car-block::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--ink);
+}
+.car-block:hover { box-shadow: var(--shadow-lift); }
+.car-name {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 60;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.1;
+}
+.car-name .model { color: var(--ink-2); font-weight: 400; font-style: italic; }
+.car-meta { margin-top: 4px; font-size: 0.85rem; color: var(--ink-3); display: flex; gap: 10px; flex-wrap: wrap; }
+.car-meta .dot { color: var(--ink-4); }
+.car-plate {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.notes-block {
+  margin-top: 12px;
+  padding: 14px 22px;
+  background: var(--paper-soft);
+  border: 1px dashed var(--rule);
+  border-radius: 2px;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  line-height: 1.55;
+}
+.notes-block .lab {
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  display: block; margin-bottom: 4px; font-weight: 500;
+}
+
+/* ── section head ────────────────────────────────────── */
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 44px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+  gap: 16px;
+}
+.section-head .meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-3); }
+
+/* ── visit card ──────────────────────────────────────── */
+.visit {
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  margin-bottom: 22px;
+  position: relative;
+  transition: box-shadow 0.22s var(--ease), transform 0.22s var(--ease);
+}
+.visit:hover { box-shadow: var(--shadow-lift); }
+.visit-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 22px;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.visit-date {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144;
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1;
+}
+.visit-date .y { color: var(--ink-3); font-weight: 400; }
+.visit-mileage {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.visit-total { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+
+.visit-body { padding: 22px 26px 24px; }
+
+.fields { display: flex; flex-direction: column; gap: 0; margin: 0; }
+.field-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 22px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.field-row:first-child { padding-top: 0; }
+.field-row:last-child  { padding-bottom: 0; border-bottom: none; }
+.field-row dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: 0;
+  padding-top: 2px;
+}
+.field-row dd { margin: 0; font-size: 0.98rem; line-height: 1.6; white-space: pre-wrap; }
+
+.totals {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule-soft);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  max-width: 380px;
+  margin-left: auto;
+}
+.totals .lab { color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.7rem; align-self: center; }
+.totals .val { text-align: right; font-variant-numeric: tabular-nums; }
+.totals .grand-lab, .totals .grand-val {
+  padding-top: 10px; margin-top: 6px;
+  border-top: 1px solid var(--rule);
+  font-size: 1.05rem; font-weight: 700;
+}
+.totals .grand-val.due { color: var(--seal); }
+
+.visit-actions {
+  display: flex; gap: 4px; align-items: center;
+  padding: 12px 20px;
+  border-top: 1px dashed var(--rule-soft);
+  background: rgba(255,255,255,0.20);
+}
+
+/* ── photos ──────────────────────────────────────────── */
+.photos { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--rule-soft); }
+.photos-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.photos-head .accent { color: var(--seal); font-weight: 700; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+.photo-thumb {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.photo-thumb:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.photo-thumb img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.photo-thumb .caption {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 9;
+  font-style: italic;
+  font-size: 0.84rem;
+  color: var(--ink-2);
+  padding: 8px 11px 10px;
+  border-top: 1px solid var(--rule-soft);
+  line-height: 1.4;
+  min-height: 38px;
+}
+.photo-thumb .caption.faint { color: var(--ink-4); }
+
+.lightbox {
+  position: fixed; inset: 0;
+  background: rgba(28,26,23,0.92);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  padding: 32px;
+  cursor: zoom-out;
+  animation: lbIn 0.25s var(--ease);
+}
+@keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img { max-width: 100%; max-height: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lightbox .lb-cap {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: var(--paper); padding: 10px 18px;
+  font-family: 'Fraunces', serif; font-style: italic;
+  max-width: 80vw;
+}
+
+/* ── FORMS — paper grouped rows ──────────────────────── */
+.form-shell { max-width: 760px; }
+.form-section { margin-bottom: 28px; }
+.form-section-title {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 24;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin: 0 0 12px 2px;
+}
+
+/* Grouped rows — Apple Settings on paper */
+.input-group {
+  background: var(--paper-input);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.input-group:focus-within { border-color: var(--ink-2); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
+.input-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: center;
+  padding: 16px 22px;
+  border-bottom: 1px dashed var(--rule-soft);
+  transition: background 0.15s var(--ease);
+  min-height: 56px;
+}
+.input-row:last-child { border-bottom: none; }
+.input-row:focus-within { background: rgba(255,250,235,0.5); }
+.input-row > label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: 0;
+}
+.input-row input,
+.input-row select,
+.input-row textarea {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  font-size: 1rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  width: 100%;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none;
+}
+.input-row input::placeholder, .input-row textarea::placeholder { color: var(--ink-4); }
+.input-row input.mono-input,
+.input-row input[name="plate"],
+.input-row input[name="phone"] {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+}
+.input-row input[name="plate"] { text-transform: uppercase; }
+.input-row.row-vert { grid-template-columns: 1fr; }
+.input-row.row-vert > label { margin-bottom: 8px; }
+.input-row.tall { align-items: flex-start; padding-top: 14px; padding-bottom: 14px; }
+.input-row.tall > label { padding-top: 4px; }
+.input-row textarea { min-height: 40px; line-height: 1.55; resize: vertical; padding-top: 0 !important; }
+
+@media (max-width: 640px) {
+  .input-row { grid-template-columns: 1fr; gap: 6px; padding: 14px 18px; }
+  .input-row > label { font-size: 0.66rem; }
+}
+
+/* Big standalone block for long textareas */
+.field-block {
+  background: var(--paper-input);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 14px 22px 16px;
+  margin-top: 12px;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.field-block:focus-within { border-color: var(--ink-2); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
+.field-block > label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.field-block textarea, .field-block input {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  font-size: 1rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  width: 100%;
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.55;
+}
+.field-block textarea::placeholder { color: var(--ink-4); }
+
+.form-actions {
+  display: flex; gap: 8px; align-items: center;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+
+/* photo upload (paper) */
+.photo-upload {
+  display: block;
+  border: 1.5px dashed var(--rule);
+  background: rgba(255,255,255,0.2);
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+  margin: 12px 0 14px;
+}
+.photo-upload:hover { border-color: var(--ink-2); background: rgba(255,255,255,0.4); }
+.photo-upload .pu-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 1rem; color: var(--ink-2); }
+.photo-upload .pu-hint { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-3); margin-top: 6px; }
+.photo-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.photo-edit { background: var(--paper); border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; position: relative; }
+.photo-edit img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.photo-edit .caption-input {
+  width: 100%; border: none !important; border-top: 1px solid var(--rule-soft) !important;
+  padding: 8px 11px !important;
+  font-size: 0.84rem;
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 9;
+  font-style: italic;
+  background: transparent !important;
+  resize: none;
+  min-height: 56px;
+  color: var(--ink);
+  outline: none;
+}
+.photo-edit .photo-remove {
+  position: absolute; top: 8px; right: 8px;
+  width: 26px; height: 26px;
+  background: rgba(28,26,23,0.85); color: var(--paper);
+  border-radius: 50%;
+  font-size: 17px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease), background 0.15s var(--ease);
+  backdrop-filter: blur(6px);
+}
+.photo-edit:hover .photo-remove { opacity: 1; }
+.photo-edit .photo-remove:hover { background: var(--seal); }
+
+/* ── empty state ─────────────────────────────────────── */
+.empty {
+  padding: 56px 24px;
+  text-align: center;
+}
+.empty-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.15rem; color: var(--ink-2); }
+.empty-hint { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-4); margin-top: 12px; }
+
+/* ── footer ──────────────────────────────────────────── */
+footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rule); }
+.foot {
+  display: flex; flex-wrap: wrap; gap: 18px;
+  justify-content: space-between; align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+.foot a { color: var(--ink-2); border-bottom: 1px solid var(--rule); transition: color 0.15s, border-color 0.15s; }
+.foot a:hover { color: var(--seal); border-bottom-color: var(--seal); }
+
+/* ── flash ───────────────────────────────────────────── */
+.flash {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper);
+  padding: 10px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  animation: flashIn 0.3s var(--ease), flashOut 0.3s var(--ease) 1.7s forwards;
+}
+@keyframes flashIn { from { opacity: 0; transform: translate(-50%, -8px); } }
+@keyframes flashOut { to { opacity: 0; transform: translate(-50%, -8px); } }
+
+/* ── page enter ──────────────────────────────────────── */
+.page-enter { animation: pageEnter 0.42s var(--ease); }
+@keyframes pageEnter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── print ───────────────────────────────────────────── */
+@media print {
+  @page { margin: 16mm; }
+  body { background: white !important; color: black; }
+  body::before { display: none !important; }
+  header, footer, .no-print, .visit-actions { display: none !important; }
+  .visit, .sheet, .input-group, .field-block, .car-block { box-shadow: none; border-color: #999; break-inside: avoid; page-break-inside: avoid; }
+  .stamp { color: black !important; }
+  body.print-visit-only .visit { display: none; }
+  body.print-visit-only .visit.print-target { display: block; }
+  body.print-visit-only .section-head { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="no-print">
+  <div class="shell head-row">
+    <a href="#/" class="brand" aria-label="На главную">
+      <span class="brand-mark">АВТОСЕРВИС<span class="dot">·</span></span>
+      <span class="brand-sub">картотека</span>
+    </a>
+    <nav class="head-nav">
+      <a href="#/" class="nav-link" data-route="dashboard">Сводка</a>
+      <a href="#/cards" class="nav-link" data-route="cards">Картотека</a>
+      <a href="#/cards/new" class="btn btn-primary" style="margin-left:10px">+ Карточка</a>
+    </nav>
+  </div>
+</header>
+
+<main class="shell" id="app"></main>
+
+<footer class="no-print">
+  <div class="shell foot">
+    <div>Локально · данные хранятся в браузере</div>
+    <div>
+      <a href="#" id="backup">бэкап</a> ·
+      <a href="#" id="restore">восстановить</a> ·
+      <a href="#" id="reseed">демо данные</a>
+      <input type="file" id="restore-input" accept="application/json" hidden>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+// ═══ IndexedDB ═══════════════════════════════════════
+const DB_NAME = 'garage_v1';
+const DB_VERSION = 1;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (ev) => {
+      const db = ev.target.result;
+      if (!db.objectStoreNames.contains('cards')) db.createObjectStore('cards', { keyPath: 'id', autoIncrement: true });
+      if (!db.objectStoreNames.contains('visits')) {
+        const s = db.createObjectStore('visits', { keyPath: 'id', autoIncrement: true });
+        s.createIndex('card_id', 'card_id', { unique: false });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+let _db;
+async function db() { if (!_db) _db = await openDB(); return _db; }
+function reqP(req) { return new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); }); }
+const repo = {
+  async list(s)      { const d = await db(); return reqP(d.transaction(s).objectStore(s).getAll()); },
+  async get(s, id)   { const d = await db(); return reqP(d.transaction(s).objectStore(s).get(Number(id))); },
+  async byIdx(s,i,v) { const d = await db(); return reqP(d.transaction(s).objectStore(s).index(i).getAll(Number(v))); },
+  async add(s, o)    { const d = await db(); if (!o.created_at) o.created_at = new Date().toISOString(); return reqP(d.transaction(s, 'readwrite').objectStore(s).add(o)); },
+  async put(s, o)    { const d = await db(); return reqP(d.transaction(s, 'readwrite').objectStore(s).put(o)); },
+  async del(s, id)   { const d = await db(); return reqP(d.transaction(s, 'readwrite').objectStore(s).delete(Number(id))); },
+  async clear(s)     { const d = await db(); return reqP(d.transaction(s, 'readwrite').objectStore(s).clear()); },
+};
+
+// ═══ Helpers ═════════════════════════════════════════
+const e = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = (s) => { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? '—' : d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' }); };
+const fmtDateParts = (s) => { if (!s) return null; const d = new Date(s); if (isNaN(d)) return null; return { day: String(d.getDate()).padStart(2,'0'), mon: String(d.getMonth()+1).padStart(2,'0'), year: d.getFullYear() }; };
+const fmtMoney = (n) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Math.round((Number(n)||0)*100)/100) + ' ₽';
+const fmtKm = (n) => n ? Number(n).toLocaleString('ru-RU') + ' км' : '—';
+const digits = (s) => String(s || '').replace(/\D/g, '');
+
+const STATUS = {
+  in_progress: { label: 'В работе', cls: 'stamp-active' },
+  ready:       { label: 'Готов',    cls: 'stamp-ready'  },
+  delivered:   { label: 'Выдан',    cls: 'stamp-done'   },
+};
+const stamp = (s) => `<span class="stamp ${STATUS[s]?.cls || 'stamp-done'}">${STATUS[s]?.label || s}</span>`;
+function plural(n, forms) { const a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return forms[2]; if (b > 1 && b < 5) return forms[1]; if (b === 1) return forms[0]; return forms[2]; }
+function flash(msg) { const f = document.createElement('div'); f.className = 'flash'; f.textContent = msg; document.body.appendChild(f); setTimeout(() => f.remove(), 2000); }
+
+async function compressImage(file, maxDim = 1280, quality = 0.82) {
+  const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(file); });
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('image load failed')); i.src = dataUrl; });
+  let { width: w, height: h } = img;
+  if (w > maxDim || h > maxDim) { const r = maxDim / Math.max(w, h); w = Math.round(w*r); h = Math.round(h*r); }
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL('image/jpeg', quality);
+}
+
+// Phone mask: +7 (XXX) XXX-XX-XX
+function formatPhone(v) {
+  let d = String(v || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('8')) d = '7' + d.slice(1);
+  if (!d.startsWith('7')) d = '7' + d;
+  d = d.slice(0, 11);
+  let r = '+7';
+  if (d.length > 1) r += ' (' + d.slice(1, 4);
+  if (d.length >= 4) r += ')';
+  if (d.length >= 5) r += ' ' + d.slice(4, 7);
+  if (d.length >= 8) r += '-' + d.slice(7, 9);
+  if (d.length >= 10) r += '-' + d.slice(9, 11);
+  return r;
+}
+function maskPhone(input) {
+  if (!input) return;
+  if (input.value) input.value = formatPhone(input.value);
+  input.addEventListener('input', () => { input.value = formatPhone(input.value); });
+}
+
+const app = document.getElementById('app');
+
+function animatePageEnter() {
+  app.classList.remove('page-enter');
+  void app.offsetWidth;
+  app.classList.add('page-enter');
+}
+function staggerChildren(selector, opts = {}) {
+  const els = document.querySelectorAll(selector);
+  const delay0 = opts.delay ?? 80, step = opts.step ?? 50, dur = opts.duration ?? 380;
+  els.forEach((el, i) => {
+    el.animate(
+      [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'translateY(0)' }],
+      { duration: dur, delay: delay0 + i * step, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'backwards' }
+    );
+  });
+}
+
+// ═══ Router ══════════════════════════════════════════
+const routes = [];
+function route(pattern, handler) {
+  const keys = [];
+  const re = new RegExp('^' + pattern.replace(/:(\w+)/g, (_, k) => { keys.push(k); return '([^/]+)'; }) + '$');
+  routes.push({ re, keys, handler });
+}
+async function dispatch() {
+  const hash = location.hash.slice(1) || '/';
+  const [path, qs] = hash.split('?');
+  const params = Object.fromEntries(new URLSearchParams(qs || ''));
+  for (const r of routes) {
+    const m = path.match(r.re);
+    if (m) {
+      r.keys.forEach((k, i) => params[k] = m[i+1]);
+      app.innerHTML = '';
+      try {
+        await r.handler(params);
+        animatePageEnter();
+      } catch (err) {
+        app.innerHTML = `<div class="empty"><div class="empty-title">Сбой: ${e(err.message)}</div></div>`;
+        console.error(err);
+      }
+      document.querySelectorAll('.nav-link').forEach(a => {
+        const target = (a.getAttribute('href') || '').replace(/^#/, '');
+        const isActive = a.dataset.route === 'dashboard' ? path === '/' : (path === target || path.startsWith(target + '/'));
+        a.classList.toggle('active', isActive);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  }
+  app.innerHTML = '<div class="empty"><div class="empty-title">Страница не найдена</div></div>';
+  animatePageEnter();
+}
+window.addEventListener('hashchange', dispatch);
+
+// ═══ Visit rendering ═════════════════════════════════
+function visitTotalsHTML(v) {
+  const cost = Number(v.cost) || 0;
+  const pre = Number(v.prepayment) || 0;
+  const due = cost - pre;
+  if (cost === 0 && pre === 0) return '';
+  return `
+    <div class="totals">
+      <span class="lab">Стоимость</span><span class="val">${fmtMoney(cost)}</span>
+      ${pre > 0 ? `
+        <span class="lab">Предоплата</span><span class="val">${fmtMoney(pre)}</span>
+        <span class="lab grand-lab">К оплате</span><span class="val grand-val due">${fmtMoney(due)}</span>
+      ` : `<span class="lab grand-lab">Итого</span><span class="val grand-val">${fmtMoney(cost)}</span>`}
+    </div>
+  `;
+}
+function visitHTML(v, opts = {}) {
+  const dp = fmtDateParts(v.visit_date);
+  const dateBlock = dp ? `<div class="visit-date">${dp.day}.${dp.mon}.<span class="y">${dp.year}</span></div>` : `<div class="visit-date muted">—</div>`;
+  const fields = [
+    ['Пожелания клиента', v.wishes],
+    ['Свои детали', v.own_parts],
+    ['Детали для заказа', v.parts_to_order],
+    ['Диагностика', v.diagnostics],
+    ['Рекомендации', v.recommendations],
+    ['Выполненная работа', v.work_done],
+    ['Мастер', v.mechanic],
+    ['Заметки', v.notes],
+  ].filter(([_, val]) => val && String(val).trim());
+  const photos = v.photos || [];
+  const due = (Number(v.cost)||0) - (Number(v.prepayment)||0);
+  const showTotal = (Number(v.cost)||0) > 0;
+  return `
+    <article class="visit" data-vid="${v.id}">
+      <div class="visit-head">
+        ${dateBlock}
+        ${v.mileage ? `<div class="visit-mileage">${fmtKm(v.mileage)}</div>` : '<div></div>'}
+        ${stamp(v.status)}
+        ${showTotal ? `<div class="visit-total">${fmtMoney(due)}</div>` : '<div></div>'}
+      </div>
+      <div class="visit-body">
+        ${fields.length ? `<dl class="fields">${fields.map(([k,val])=>`<div class="field-row"><dt>${e(k)}</dt><dd>${e(val)}</dd></div>`).join('')}</dl>` : `<div class="muted" style="font-style:italic">Подробности не заполнены.</div>`}
+        ${visitTotalsHTML(v)}
+        ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.dataUrl)}" alt=""><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
+      </div>
+      ${opts.actions !== false ? `<div class="visit-actions no-print"><button class="btn btn-text btn-sm" data-print-visit="${v.id}">Печать визита</button><a href="#/visits/${v.id}/edit" class="btn btn-text btn-sm">Редактировать</a><button class="btn btn-text btn-sm btn-danger" data-del-visit="${v.id}">Удалить</button></div>` : ''}
+    </article>
+  `;
+}
+function bindVisitActions(reload) {
+  document.querySelectorAll('[data-print-visit]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.printVisit;
+      document.querySelectorAll('.visit').forEach(el => el.classList.toggle('print-target', el.dataset.vid === id));
+      document.body.classList.add('print-visit-only');
+      const cleanup = () => { document.body.classList.remove('print-visit-only'); window.removeEventListener('afterprint', cleanup); };
+      window.addEventListener('afterprint', cleanup);
+      window.print();
+    });
+  });
+  document.querySelectorAll('[data-del-visit]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Удалить визит безвозвратно?')) return;
+      await repo.del('visits', btn.dataset.delVisit);
+      flash('Визит удалён');
+      reload && reload();
+    });
+  });
+  document.querySelectorAll('.photo-thumb').forEach(el => {
+    el.addEventListener('click', async () => {
+      const v = await repo.get('visits', Number(el.dataset.vid));
+      const p = (v?.photos || [])[Number(el.dataset.pi)];
+      if (!p) return;
+      const lb = document.createElement('div');
+      lb.className = 'lightbox';
+      lb.innerHTML = `<img src="${e(p.dataUrl)}" alt="">${p.comment ? `<div class="lb-cap">${e(p.comment)}</div>` : ''}`;
+      lb.addEventListener('click', () => lb.remove());
+      document.body.appendChild(lb);
+    });
+  });
+}
+function bindRowClicks() {
+  document.querySelectorAll('tr.click').forEach(tr => {
+    tr.addEventListener('click', () => { if (tr.dataset.go) location.hash = tr.dataset.go; });
+  });
+}
+
+// ═══ Routes ══════════════════════════════════════════
+
+route('/', async () => {
+  const [cards, visits] = await Promise.all([repo.list('cards'), repo.list('visits')]);
+  const inProgress = visits.filter(v => v.status === 'in_progress');
+  const ready      = visits.filter(v => v.status === 'ready');
+  const cardById = Object.fromEntries(cards.map(c => [c.id, c]));
+  const recent = [...visits].sort((a,b) => (b.visit_date||'').localeCompare(a.visit_date||'')).slice(0, 6);
+
+  app.innerHTML = `
+    <section class="page-head">
+      <div class="crumbs">${new Date().toLocaleDateString('ru-RU', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}</div>
+      <h1 class="h1">Сводка по сервису</h1>
+      <p class="lede">Состояние работ на сегодня. Машины в ремонте и готовые к выдаче.</p>
+    </section>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Карточек</div><div class="stat-value num">${cards.length}</div></div>
+      <div class="stat"><div class="stat-label">Всего визитов</div><div class="stat-value num">${visits.length}</div></div>
+      <div class="stat"><div class="stat-label">В работе</div><div class="stat-value seal num">${inProgress.length}</div></div>
+      <div class="stat"><div class="stat-label">Готовы к выдаче</div><div class="stat-value olive num">${ready.length}</div></div>
+    </div>
+
+    ${cards.length === 0 ? `
+      <div class="sheet sheet-pad" style="padding:60px 30px; text-align:center;">
+        <div class="empty-title">Картотека пуста</div>
+        <div class="empty-hint">Заведите первую карточку или загрузите демо</div>
+        <div style="margin-top: 22px; display: flex; gap: 8px; justify-content: center;">
+          <a href="#/cards/new" class="btn btn-primary">+ Новая карточка</a>
+          <button class="btn btn-ghost" id="seed-btn">Загрузить демо</button>
+        </div>
+      </div>
+    ` : `
+      ${activeBlock('В работе', inProgress, cardById, 'seal')}
+      ${activeBlock('Готовы к выдаче', ready, cardById, 'olive')}
+      <div class="section-head"><h2 class="h2">Последние визиты</h2><div class="meta">${recent.length} из ${visits.length}</div></div>
+      <div class="sheet">
+        ${recent.length === 0 ? `<div class="empty"><div class="empty-title">Записей ещё нет</div></div>` : `
+          <table class="ledger">
+            <thead><tr><th style="width:90px">Дата</th><th>Клиент</th><th>Машина</th><th>Гос. номер</th><th class="right">Стоимость</th><th>Статус</th></tr></thead>
+            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${fmtMoney(v.cost)}</td><td>${stamp(v.status)}</td></tr>`; }).join('')}</tbody>
+          </table>
+        `}
+      </div>
+    `}
+  `;
+  bindRowClicks();
+  staggerChildren('.stat', { delay: 60, step: 40, duration: 360 });
+  const seedBtn = document.getElementById('seed-btn');
+  if (seedBtn) seedBtn.addEventListener('click', async () => { await seedDemo(); flash('Демо-данные загружены'); dispatch(); });
+});
+
+function activeBlock(title, visits, cardById, accent) {
+  if (visits.length === 0) return '';
+  const color = accent === 'seal' ? 'var(--seal)' : 'var(--olive)';
+  return `
+    <div class="section-head">
+      <h2 class="h2">${title}</h2>
+      <div class="meta" style="color: ${color}">${visits.length} ${plural(visits.length, ['визит','визита','визитов'])}</div>
+    </div>
+    <div class="sheet">
+      <table class="ledger">
+        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right">${fmtKm(v.mileage)}</td><td class="right num">${fmtMoney(v.cost)}</td></tr>`; }).join('')}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+route('/cards', async () => {
+  const [cards, visits] = await Promise.all([repo.list('cards'), repo.list('visits')]);
+  const visitsByCard = visits.reduce((m, v) => { (m[v.card_id] ||= []).push(v); return m; }, {});
+  Object.values(visitsByCard).forEach(arr => arr.sort((a,b) => (b.visit_date||'').localeCompare(a.visit_date||'')));
+
+  app.innerHTML = `
+    <section class="page-head">
+      <div class="crumbs">картотека</div>
+      <h1 class="h1">Клиенты</h1>
+      <p class="lede">Все карточки сервиса. Поиск по фамилии, гос.&nbsp;номеру, марке, телефону и дате визита.</p>
+    </section>
+
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="q" placeholder="Иванов · A123BC · Toyota · +7916… · 28.04.26" autofocus autocomplete="off">
+      <span class="search-meta" id="qmeta">${cards.length} ${plural(cards.length, ['карточка','карточки','карточек'])}</span>
+    </label>
+
+    <div class="sheet" id="result"></div>
+  `;
+
+  const render = (q='') => {
+    const f = q.toLowerCase().trim();
+    const fDigits = digits(f);
+    const filtered = cards.filter(c => {
+      if (!f) return true;
+      const blob = [c.surname, c.first_name, c.plate, c.make, c.model, c.notes].filter(Boolean).join(' ').toLowerCase();
+      if (blob.includes(f)) return true;
+      if (fDigits && digits(c.phone).includes(fDigits)) return true;
+      const vs = visitsByCard[c.id] || [];
+      if (vs.some(v => fmtDate(v.visit_date).toLowerCase().includes(f))) return true;
+      return false;
+    }).sort((a,b) => (a.surname||'').localeCompare(b.surname||'', 'ru'));
+    document.getElementById('qmeta').textContent = f ? `${filtered.length} из ${cards.length}` : `${cards.length} ${plural(cards.length, ['карточка','карточки','карточек'])}`;
+    const out = document.getElementById('result');
+    if (filtered.length === 0) { out.innerHTML = `<div class="empty"><div class="empty-title">Ничего не найдено</div><div class="empty-hint">Попробуйте другой запрос</div></div>`; return; }
+    out.innerHTML = `
+      <table class="ledger">
+        <thead><tr><th style="width:60px">№</th><th>Клиент</th><th>Телефон</th><th>Машина</th><th>Гос. номер</th><th class="right" style="width:80px">Визиты</th><th style="width:110px">Последний</th></tr></thead>
+        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-num">${String(c.id).padStart(3,'0')}</td><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
+      </table>
+    `;
+    bindRowClicks();
+  };
+  render();
+  document.getElementById('q').addEventListener('input', ev => render(ev.target.value));
+});
+
+route('/cards/new', async () => {
+  app.innerHTML = `
+    <section class="page-head">
+      <div class="crumbs"><a href="#/cards">Картотека</a> · новая</div>
+      <h1 class="h1">Новая карточка</h1>
+      <p class="lede">Данные клиента и его машины. Визиты добавляются позже.</p>
+    </section>
+    ${cardForm({})}
+  `;
+  bindCardForm({});
+});
+
+route('/cards/:id', async ({id}) => {
+  const card = await repo.get('cards', id);
+  if (!card) { app.innerHTML = '<div class="empty"><div class="empty-title">Карточка не найдена</div></div>'; return; }
+  const visits = (await repo.byIdx('visits', 'card_id', id)).sort((a,b) => (b.visit_date||'').localeCompare(a.visit_date||''));
+  const lastVisit = visits[0];
+  const since = card.created_at ? new Date(card.created_at).toLocaleDateString('ru-RU', { month:'long', year:'numeric' }) : '';
+
+  app.innerHTML = `
+    <section class="page-head no-print"><div class="crumbs"><a href="#/cards">← Картотека</a></div></section>
+
+    <section class="hero">
+      <div class="hero-meta">
+        <span class="num-badge">№ ${String(card.id).padStart(3,'0')}</span>
+        ${since ? `<span class="sep">·</span><span>с ${since}</span>` : ''}
+        <span class="sep">·</span><span>${visits.length} ${plural(visits.length, ['визит','визита','визитов'])}</span>
+      </div>
+      <h1 class="hero-name">${e(card.surname || '—')}${card.first_name ? `<span class="hero-given">${e(card.first_name)}</span>` : ''}</h1>
+      ${card.phone ? `<div class="hero-phone">${e(card.phone)}</div>` : ''}
+      <div class="hero-actions no-print">
+        <a href="#/cards/${id}/visits/new" class="btn btn-primary">+ Новый визит</a>
+        <a href="#/cards/${id}/edit" class="btn btn-ghost">Редактировать</a>
+        <button class="btn btn-ghost" id="print-card">Печать</button>
+        <button class="btn btn-text btn-danger" id="del-card">Удалить</button>
+      </div>
+    </section>
+
+    <section class="car-block">
+      <div>
+        <div class="car-name">${e(card.make || '—')}${card.model ? ` <span class="model">${e(card.model)}</span>` : ''}</div>
+        <div class="car-meta">${lastVisit?.mileage ? `<span>пробег ${fmtKm(lastVisit.mileage)}</span><span class="dot">·</span>` : ''}${lastVisit ? `<span>последний визит ${fmtDate(lastVisit.visit_date)}</span>` : '<span>визитов пока нет</span>'}</div>
+      </div>
+      <div class="car-plate">${e(card.plate || '—')}</div>
+    </section>
+
+    ${card.notes ? `<div class="notes-block"><span class="lab">Заметки</span>${e(card.notes)}</div>` : ''}
+
+    <div class="section-head no-print">
+      <h2 class="h2">История визитов</h2>
+      <div class="meta">${visits.length} ${plural(visits.length, ['запись','записи','записей'])}</div>
+    </div>
+
+    ${visits.length === 0 ? `
+      <div class="sheet"><div class="empty"><div class="empty-title">Визитов пока нет</div><div class="empty-hint" style="margin-top: 14px;"><a href="#/cards/${id}/visits/new" class="btn btn-primary">+ Первый визит</a></div></div></div>
+    ` : visits.map(v => visitHTML(v)).join('')}
+  `;
+
+  document.getElementById('print-card').addEventListener('click', () => window.print());
+  document.getElementById('del-card').addEventListener('click', async () => {
+    if (!confirm(`Удалить карточку «${card.surname}» вместе со всеми визитами?`)) return;
+    for (const v of visits) await repo.del('visits', v.id);
+    await repo.del('cards', id);
+    flash('Карточка удалена');
+    location.hash = '#/cards';
+  });
+  bindVisitActions(() => dispatch());
+  staggerChildren('.visit', { delay: 220, step: 70, duration: 420 });
+});
+
+route('/cards/:id/edit', async ({id}) => {
+  const card = await repo.get('cards', id);
+  if (!card) { app.innerHTML = '<div class="empty"><div class="empty-title">Карточка не найдена</div></div>'; return; }
+  app.innerHTML = `
+    <section class="page-head">
+      <div class="crumbs"><a href="#/cards/${id}">← ${e(card.surname || 'Карточка')}</a></div>
+      <h1 class="h1">Редактирование</h1>
+    </section>
+    ${cardForm(card)}
+  `;
+  bindCardForm(card);
+});
+
+function cardForm(c) {
+  return `
+    <form class="form-shell" id="card-form">
+      <div class="form-section">
+        <div class="form-section-title">Клиент</div>
+        <div class="input-group">
+          <div class="input-row"><label for="f-surname">Фамилия</label><input id="f-surname" name="surname" required value="${e(c.surname||'')}" autofocus placeholder="Иванов"></div>
+          <div class="input-row"><label for="f-first">Имя · отчество</label><input id="f-first" name="first_name" value="${e(c.first_name||'')}" placeholder="Иван Сергеевич"></div>
+          <div class="input-row"><label for="f-phone">Телефон</label><input id="f-phone" name="phone" type="tel" value="${e(c.phone||'')}" placeholder="+7 (___) ___-__-__"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Машина</div>
+        <div class="input-group">
+          <div class="input-row"><label for="f-make">Марка</label><input id="f-make" name="make" required value="${e(c.make||'')}" placeholder="Toyota"></div>
+          <div class="input-row"><label for="f-model">Модель</label><input id="f-model" name="model" value="${e(c.model||'')}" placeholder="Corolla"></div>
+          <div class="input-row"><label for="f-plate">Гос. номер</label><input id="f-plate" name="plate" required value="${e(c.plate||'')}" placeholder="A 123 BC 77"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="field-block">
+          <label for="f-notes">Заметки</label>
+          <textarea id="f-notes" name="notes" placeholder="VIN, второй контакт, особенности">${e(c.notes||'')}</textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">${c.id ? 'Сохранить' : 'Создать карточку'}</button>
+        <a href="${c.id ? `#/cards/${c.id}` : '#/cards'}" class="btn btn-text">Отмена</a>
+      </div>
+    </form>
+  `;
+}
+function bindCardForm(c) {
+  maskPhone(document.getElementById('f-phone'));
+  document.getElementById('card-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const data = Object.fromEntries(new FormData(ev.target));
+    if (c.id) {
+      await repo.put('cards', { ...c, ...data });
+      flash('Сохранено');
+      location.hash = '#/cards/' + c.id;
+    } else {
+      const id = await repo.add('cards', data);
+      flash('Карточка создана');
+      location.hash = '#/cards/' + id;
+    }
+  });
+}
+
+route('/cards/:id/visits/new', async ({id}) => {
+  const card = await repo.get('cards', id);
+  if (!card) { app.innerHTML = '<div class="empty"><div class="empty-title">Карточка не найдена</div></div>'; return; }
+  const today = new Date().toISOString().slice(0,10);
+  const draft = { card_id: Number(id), visit_date: today, status: 'in_progress', cost: 0, prepayment: 0, photos: [] };
+  app.innerHTML = `
+    <section class="page-head">
+      <div class="crumbs"><a href="#/cards/${id}">← ${e(card.surname || 'Карточка')}</a> · новый визит</div>
+      <h1 class="h1">Новый визит</h1>
+      <p class="lede">${e(card.surname || '')} · ${e(card.make || '')} ${e(card.model || '')} · <span class="mono" style="font-size: 0.9rem">${e(card.plate || '')}</span></p>
+    </section>
+    ${visitForm(draft)}
+  `;
+  bindVisitForm(draft);
+});
+
+route('/visits/:id/edit', async ({id}) => {
+  const v = await repo.get('visits', id);
+  if (!v) { app.innerHTML = '<div class="empty"><div class="empty-title">Визит не найден</div></div>'; return; }
+  const card = await repo.get('cards', v.card_id);
+  app.innerHTML = `
+    <section class="page-head">
+      <div class="crumbs"><a href="#/cards/${v.card_id}">← ${e(card?.surname || 'Карточка')}</a> · визит</div>
+      <h1 class="h1">Редактирование визита</h1>
+      <p class="lede">${fmtDate(v.visit_date)} · ${e(card?.make || '')} ${e(card?.model || '')}</p>
+    </section>
+    ${visitForm(v)}
+  `;
+  bindVisitForm(v);
+});
+
+function visitForm(v) {
+  const date = v.visit_date ? v.visit_date.slice(0,10) : '';
+  return `
+    <form class="form-shell" id="visit-form">
+      <div class="form-section">
+        <div class="form-section-title">Приём</div>
+        <div class="input-group">
+          <div class="input-row"><label for="vf-date">Дата посещения</label><input id="vf-date" name="visit_date" type="date" required value="${date}"></div>
+          <div class="input-row"><label for="vf-mileage">Пробег, км</label><input id="vf-mileage" name="mileage" type="number" min="0" value="${v.mileage||''}" placeholder="—"></div>
+        </div>
+        <div class="field-block"><label for="vf-wishes">Пожелания клиента</label><textarea id="vf-wishes" name="wishes" placeholder="Что просит сделать или беспокоит">${e(v.wishes||'')}</textarea></div>
+        <div class="field-block"><label for="vf-own">Свои детали</label><textarea id="vf-own" name="own_parts" placeholder="Что клиент привёз с собой">${e(v.own_parts||'')}</textarea></div>
+        <div class="field-block"><label for="vf-order">Детали для заказа</label><textarea id="vf-order" name="parts_to_order" placeholder="Что нужно заказать">${e(v.parts_to_order||'')}</textarea></div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Работа</div>
+        <div class="field-block"><label for="vf-diag">Диагностика</label><textarea id="vf-diag" name="diagnostics" placeholder="Что нашли при осмотре">${e(v.diagnostics||'')}</textarea></div>
+        <div class="field-block"><label for="vf-rec">Рекомендации</label><textarea id="vf-rec" name="recommendations" placeholder="Что советуем сделать дополнительно">${e(v.recommendations||'')}</textarea></div>
+        <div class="field-block"><label for="vf-work">Выполненная работа</label><textarea id="vf-work" name="work_done" placeholder="Что сделали по факту">${e(v.work_done||'')}</textarea></div>
+        <div class="input-group" style="margin-top:12px">
+          <div class="input-row"><label for="vf-mech">Мастер</label><input id="vf-mech" name="mechanic" value="${e(v.mechanic||'')}"></div>
+          <div class="input-row"><label for="vf-status">Статус</label>
+            <select id="vf-status" name="status">${Object.entries(STATUS).map(([k,vv])=>`<option value="${k}" ${v.status===k?'selected':''}>${vv.label}</option>`).join('')}</select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Расчёт</div>
+        <div class="input-group">
+          <div class="input-row"><label for="vf-cost">Стоимость, ₽</label><input id="vf-cost" name="cost" type="number" min="0" step="0.01" value="${v.cost||0}"></div>
+          <div class="input-row"><label for="vf-pre">Предоплата, ₽</label><input id="vf-pre" name="prepayment" type="number" min="0" step="0.01" value="${v.prepayment||0}"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Фото</div>
+        <label class="photo-upload" for="photo-input">
+          <div class="pu-title">Перетащите фото или нажмите чтобы выбрать</div>
+          <div class="pu-hint">JPEG · PNG · можно несколько · сжимаются автоматически</div>
+          <input type="file" id="photo-input" accept="image/*" multiple hidden>
+        </label>
+        <div class="photo-edit-grid" id="photo-grid"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="field-block"><label for="vf-notes">Заметки</label><textarea id="vf-notes" name="notes" placeholder="Любые служебные пометки">${e(v.notes||'')}</textarea></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">${v.id ? 'Сохранить визит' : 'Создать визит'}</button>
+        <a href="#/cards/${v.card_id}" class="btn btn-text">Отмена</a>
+      </div>
+    </form>
+  `;
+}
+function bindVisitForm(v) {
+  let photos = (v.photos || []).slice();
+  const grid = document.getElementById('photo-grid');
+
+  const renderPhotos = () => {
+    grid.innerHTML = photos.map((p, i) => `
+      <div class="photo-edit" data-i="${i}">
+        <button type="button" class="photo-remove" data-rm="${i}" aria-label="Удалить">×</button>
+        <img src="${e(p.dataUrl)}" alt="">
+        <textarea class="caption-input" data-cap="${i}" placeholder="Подпись…">${e(p.comment||'')}</textarea>
+      </div>
+    `).join('');
+    grid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { photos.splice(Number(b.dataset.rm), 1); renderPhotos(); }));
+    grid.querySelectorAll('[data-cap]').forEach(t => t.addEventListener('input', () => { photos[Number(t.dataset.cap)].comment = t.value; }));
+  };
+  renderPhotos();
+
+  const handleFiles = async (files) => {
+    for (const file of files) {
+      try { const dataUrl = await compressImage(file); photos.push({ dataUrl, comment: '', name: file.name }); }
+      catch (err) { console.error('photo error', err); alert('Не удалось обработать ' + file.name); }
+    }
+    renderPhotos();
+  };
+  const fileInput = document.getElementById('photo-input');
+  fileInput.addEventListener('change', async (ev) => { await handleFiles(Array.from(ev.target.files || [])); fileInput.value = ''; });
+  const dropZone = document.querySelector('.photo-upload');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--seal)'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
+  dropZone.addEventListener('drop', async (ev) => { ev.preventDefault(); dropZone.style.borderColor = ''; const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/')); await handleFiles(files); });
+
+  document.getElementById('visit-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const data = Object.fromEntries(new FormData(ev.target));
+    data.card_id = v.card_id;
+    if (data.mileage) data.mileage = Number(data.mileage); else delete data.mileage;
+    data.cost = Number(data.cost) || 0;
+    data.prepayment = Number(data.prepayment) || 0;
+    if (data.visit_date) data.visit_date = new Date(data.visit_date + 'T12:00:00').toISOString();
+    data.photos = photos;
+    if (v.id) { await repo.put('visits', { ...v, ...data }); flash('Визит сохранён'); }
+    else      { await repo.add('visits', data); flash('Визит создан'); }
+    location.hash = '#/cards/' + v.card_id;
+  });
+}
+
+// ═══ Demo seed ════════════════════════════════════════
+async function seedDemo() {
+  const today = Date.now();
+  const day = 86400000;
+  const ago = (n) => new Date(today - n * day).toISOString();
+
+  const seed = [
+    {
+      card: { surname: 'Иванов', first_name: 'Сергей Петрович', phone: '+7 (916) 234-56-78', plate: 'А 123 BC 77', make: 'Toyota', model: 'Camry', notes: 'VIN: JTNBE40K003456789. Постоянный клиент с 2023 года.' },
+      visits: [
+        { daysAgo: 90, status: 'delivered', mileage: 78000, wishes: 'Плановое ТО на 75 000 км', work_done: 'Замена моторного масла, масляного фильтра, воздушного и салонного. Проверка тормозной системы.', parts_to_order: 'Mobil 1 5W-30 (4л); фильтр масляный; воздушный; салонный угольный', mechanic: 'Сергей', cost: 8400 },
+        { daysAgo: 30, status: 'delivered', mileage: 80500, wishes: 'Стук в передней подвеске при езде по неровностям', diagnostics: 'Износ передних сайлент-блоков с обеих сторон. Стойки стабилизатора в норме.', recommendations: 'В будущем посмотреть опорные подшипники', work_done: 'Замена сайлент-блоков передних рычагов (2 шт). Сход-развал.', parts_to_order: 'Сайлент-блок RBI ×2', mechanic: 'Сергей', cost: 12400, prepayment: 5000 },
+        { daysAgo: 1, status: 'in_progress', mileage: 81200, wishes: 'Скрип передних колодок при торможении', diagnostics: 'Передние колодки изношены, диски в пределах допуска.', parts_to_order: 'Колодки Akebono передние; смазка для направляющих', work_done: 'В процессе.', mechanic: 'Андрей', cost: 7200 },
+      ]
+    },
+    {
+      card: { surname: 'Петрова', first_name: 'Анна Викторовна', phone: '+7 (925) 876-54-32', plate: 'M 456 KP 197', make: 'Volkswagen', model: 'Polo', notes: 'Машина мужа, контактный телефон жены.' },
+      visits: [
+        { daysAgo: 180, status: 'delivered', mileage: 65300, wishes: 'Плановое ТО', work_done: 'Замена масла, фильтров. Проверка ходовой.', mechanic: 'Сергей', cost: 6900 },
+        { daysAgo: 0, status: 'ready', mileage: 71200, wishes: 'Замена ремня ГРМ по регламенту', diagnostics: 'Ремень и ролики в удовлетворительном состоянии, но пробег требует замены.', work_done: 'Замена ремня ГРМ, помпы, натяжителя. Замена антифриза.', parts_to_order: 'Комплект ГРМ Continental; помпа; антифриз G13 5л', mechanic: 'Андрей', cost: 18500, prepayment: 5000 },
+      ]
+    },
+    {
+      card: { surname: 'Сидоров', first_name: 'Андрей', phone: '+7 (903) 111-22-33', plate: 'E 789 TT 50', make: 'Hyundai', model: 'Solaris', notes: '' },
+      visits: [
+        { daysAgo: 60, status: 'delivered', mileage: 92000, wishes: 'Не заводится утром', diagnostics: 'Аккумулятор не держит заряд. Генератор в норме.', work_done: 'Замена аккумулятора Varta 60Ah.', parts_to_order: 'АКБ Varta Blue 60Ah', mechanic: 'Сергей', cost: 8200 },
+      ]
+    },
+    {
+      card: { surname: 'Козлов', first_name: 'Михаил Сергеевич', phone: '+7 (909) 333-22-11', plate: 'K 234 OB 77', make: 'Lada', model: 'Vesta', notes: 'Гарантийная машина.' },
+      visits: [
+        { daysAgo: 1, status: 'in_progress', mileage: 23500, wishes: 'Не заводится — крутит, но не схватывает', diagnostics: 'Ожидается осмотр стартера и топливной системы.', work_done: 'Диагностика в процессе.', mechanic: 'Андрей', cost: 0 },
+      ]
+    },
+    {
+      card: { surname: 'Морозова', first_name: 'Екатерина Дмитриевна', phone: '+7 (916) 555-44-33', plate: 'B 555 KK 99', make: 'Kia', model: 'Rio', notes: '' },
+      visits: [
+        { daysAgo: 120, status: 'delivered', mileage: 145000, wishes: 'Пропадает сцепление', diagnostics: 'Износ диска сцепления, корзина в порядке.', work_done: 'Замена комплекта сцепления (диск, корзина, выжимной).', parts_to_order: 'Комплект сцепления LUK', mechanic: 'Сергей', cost: 24500, prepayment: 10000 },
+      ]
+    },
+    {
+      card: { surname: 'Николаев', first_name: 'Олег Иванович', phone: '+7 (985) 222-33-44', plate: 'A 777 PT 197', make: 'BMW', model: 'X5', notes: 'Премиум клиент. Платит без вопросов, любит подробности по работе.' },
+      visits: [
+        { daysAgo: 240, status: 'delivered', mileage: 145000, wishes: 'Скрип тормозов, проверить тормозную систему полностью', diagnostics: 'Износ колодок и дисков на всех осях. Тормозная жидкость требует замены.', work_done: 'Замена тормозных колодок (4 оси) и дисков (4 оси). Прокачка тормозов, замена ТЖ.', parts_to_order: 'Колодки Akebono ×2 комплекта; диски Brembo ×4; ТЖ DOT4 1л ×2', mechanic: 'Сергей', cost: 56000, prepayment: 20000 },
+        { daysAgo: 60, status: 'delivered', mileage: 152000, wishes: 'Стуки на неровностях', diagnostics: 'Износ амортизаторов спереди и сзади.', work_done: 'Замена амортизаторов (4 шт), пыльников. Сход-развал.', parts_to_order: 'Амортизаторы Bilstein B6 ×4', mechanic: 'Сергей', cost: 34000, prepayment: 15000 },
+      ]
+    },
+    {
+      card: { surname: 'Фёдорова', first_name: 'Мария', phone: '+7 (906) 444-55-66', plate: 'H 333 CC 77', make: 'Ford', model: 'Focus', notes: '' },
+      visits: [
+        { daysAgo: 35, status: 'delivered', mileage: 88000, wishes: 'Свист под капотом при запуске', diagnostics: 'Износ ремня генератора и натяжителя.', work_done: 'Замена ремня генератора с натяжителем.', parts_to_order: 'Ремень Gates; натяжитель INA', mechanic: 'Андрей', cost: 5400 },
+      ]
+    },
+  ];
+
+  for (const item of seed) {
+    const cardId = await repo.add('cards', item.card);
+    for (const v of item.visits) {
+      const visit = { card_id: cardId, ...v, photos: [] };
+      visit.visit_date = ago(visit.daysAgo);
+      delete visit.daysAgo;
+      await repo.add('visits', visit);
+    }
+  }
+}
+
+async function maybeAutoSeed() {
+  if (localStorage.getItem('garage_seeded')) return;
+  const cards = await repo.list('cards');
+  if (cards.length > 0) { localStorage.setItem('garage_seeded', '1'); return; }
+  await seedDemo();
+  localStorage.setItem('garage_seeded', '1');
+}
+
+// ═══ Backup / Restore / Reseed ════════════════════════
+document.getElementById('backup').addEventListener('click', async (ev) => {
+  ev.preventDefault();
+  const data = { version: 1, schema: 'cards/visits', exported_at: new Date().toISOString(), cards: await repo.list('cards'), visits: await repo.list('visits') };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kartoteka-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  flash('Бэкап сохранён');
+});
+
+document.getElementById('restore').addEventListener('click', (ev) => { ev.preventDefault(); document.getElementById('restore-input').click(); });
+document.getElementById('restore-input').addEventListener('change', async (ev) => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  if (!confirm('ВНИМАНИЕ: восстановление перезапишет все текущие данные. Продолжить?')) { ev.target.value = ''; return; }
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.schema !== 'cards/visits') { if (!confirm('Файл другого формата. Импортировать всё равно?')) return; }
+    await Promise.all(['cards','visits'].map(s => repo.clear(s)));
+    for (const c of data.cards  || []) await repo.put('cards', c);
+    for (const v of data.visits || []) await repo.put('visits', v);
+    flash('Восстановлено');
+    setTimeout(() => location.reload(), 600);
+  } catch (err) { alert('Ошибка: ' + err.message); }
+});
+
+document.getElementById('reseed').addEventListener('click', async (ev) => {
+  ev.preventDefault();
+  const cards = await repo.list('cards');
+  if (cards.length > 0 && !confirm('Это очистит все текущие данные и загрузит примеры заново. Продолжить?')) return;
+  await Promise.all(['cards','visits'].map(s => repo.clear(s)));
+  await seedDemo();
+  localStorage.setItem('garage_seeded', '1');
+  flash('Демо данные загружены');
+  dispatch();
+});
+
+// ═══ Boot ═════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  await maybeAutoSeed();
+  if (!location.hash) location.hash = '#/'; else dispatch();
+});
+</script>
+</body>
+</html>
