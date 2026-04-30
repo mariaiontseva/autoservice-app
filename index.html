@@ -826,96 +826,156 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 /* ── birthday modal ──────────────────────────────────── */
 .bday-modal {
   position: fixed; inset: 0;
-  background: radial-gradient(ellipse at center, rgba(168,70,42,0.35), rgba(28,25,23,0.92));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   z-index: 5000;
-  display: flex; align-items: center; justify-content: center;
+  display: grid;
+  place-items: center;
   padding: 24px;
-  animation: bdayFadeIn 0.45s var(--ease);
+  background: rgba(28, 25, 23, 0.55);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  animation: bdayFadeIn 0.5s var(--ease);
 }
+.bday-modal[hidden] { display: none !important; }
+.bday-modal::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 28% 30%, rgba(168,70,42,0.3), transparent 55%),
+    radial-gradient(ellipse at 78% 70%, rgba(90,106,35,0.18), transparent 55%);
+  animation: bdayDrift 12s ease-in-out infinite alternate;
+}
+@keyframes bdayDrift { to { transform: translate(20px, -16px) scale(1.06); } }
 @keyframes bdayFadeIn { from { opacity: 0; } to { opacity: 1; } }
-.bday-modal.closing { animation: bdayFadeOut 0.5s var(--ease) forwards; }
+.bday-modal.closing { animation: bdayFadeOut 0.55s var(--ease) forwards; }
 @keyframes bdayFadeOut { to { opacity: 0; } }
 
 .bday-content {
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  padding: 56px 48px 48px;
+  position: relative;
   text-align: center;
-  max-width: 480px;
+  max-width: 540px;
   width: 100%;
-  animation: bdayPop 0.55s cubic-bezier(0.16, 1.4, 0.3, 1);
+  padding: 64px 50px 52px;
+  background: linear-gradient(180deg, rgba(255,253,247,0.96), rgba(244,239,229,0.93));
+  border: 1px solid rgba(212,205,184,0.55);
+  border-radius: 4px;
+  box-shadow:
+    0 60px 100px -30px rgba(28,25,23,0.45),
+    0 0 0 1px rgba(255,255,255,0.45) inset;
+  animation: bdayPop 0.7s cubic-bezier(0.16, 1.3, 0.3, 1);
 }
-@keyframes bdayPop { from { opacity: 0; transform: scale(0.85) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes bdayPop {
+  from { opacity: 0; transform: scale(0.88) translateY(24px); filter: blur(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
 
 .bday-stage[hidden] { display: none; }
-.bday-stage { animation: stageFadeIn 0.5s var(--ease); }
-@keyframes stageFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.bday-stage { animation: stageFadeIn 0.55s var(--ease); }
+@keyframes stageFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.gift-icon {
-  font-size: 130px;
-  cursor: pointer;
+/* Gift box (SVG) */
+.gift-box {
   display: inline-block;
-  user-select: none;
-  filter: drop-shadow(0 6px 12px rgba(28,25,23,0.18));
-  transition: transform 0.3s var(--ease);
-  animation: giftBob 2s ease-in-out infinite;
+  width: 180px; height: 198px;
+  cursor: pointer;
+  position: relative;
+  filter: drop-shadow(0 18px 28px rgba(28,25,23,0.22));
+  transition: transform 0.35s var(--ease), filter 0.35s var(--ease);
+  animation: giftFloat 3.6s ease-in-out infinite;
 }
-@keyframes giftBob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
-.gift-icon:hover { animation: none; transform: scale(1.08) rotate(-4deg); }
-.gift-icon:active { transform: scale(0.95); }
-.gift-icon.bursting {
-  animation: giftBurst 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+@keyframes giftFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-10px) rotate(2deg); }
 }
-@keyframes giftBurst {
-  0%   { transform: scale(1) rotate(0); }
-  15%  { transform: scale(1.15) rotate(-12deg); }
-  30%  { transform: scale(1.2) rotate(12deg); }
-  45%  { transform: scale(1.3) rotate(-10deg); }
-  60%  { transform: scale(1.5) rotate(8deg); }
-  100% { transform: scale(2.4) rotate(0); opacity: 0; }
+.gift-box:hover {
+  animation: none;
+  transform: translateY(-6px) scale(1.04) rotate(-1.5deg);
+  filter: drop-shadow(0 26px 40px rgba(168,70,42,0.4));
+}
+.gift-box.opening { animation: none; pointer-events: none; }
+.gift-svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.gift-svg .g-lid, .gift-svg .g-bow {
+  transform-origin: 100px 80px;
+  transition: transform 0.85s cubic-bezier(0.18, 1.15, 0.32, 1);
+}
+.gift-box.opening .g-lid { transform: translate(-12px, -58px) rotate(-14deg); }
+.gift-box.opening .g-bow { transform: translate(-16px, -86px) rotate(-18deg); }
+.gift-svg .g-body { transform-origin: 100px 192px; }
+.gift-box.opening .g-body { animation: giftBodyBounce 0.55s 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes giftBodyBounce {
+  0%   { transform: scaleY(1) scaleX(1); }
+  40%  { transform: scaleY(1.07) scaleX(0.94); }
+  100% { transform: scaleY(1) scaleX(1); }
+}
+.gift-svg .g-burst { transform-origin: 100px 100px; }
+.gift-box.opening .g-burst { animation: giftBurstFlash 1s 0.2s ease-out forwards; }
+@keyframes giftBurstFlash {
+  0%   { opacity: 0; transform: scale(0.2); }
+  35%  { opacity: 1; transform: scale(1.6); }
+  100% { opacity: 0; transform: scale(2.8); }
+}
+.gift-box.fading { animation: giftFade 0.5s ease-out forwards; }
+@keyframes giftFade {
+  to { opacity: 0; transform: scale(1.15) translateY(-10px); }
 }
 
 .bday-hint {
-  margin-top: 28px;
+  display: block;
+  margin-top: 32px;
   font-family: 'Fraunces', serif;
   font-style: italic;
+  font-size: 0.98rem;
   color: var(--ink-3);
-  font-size: 1rem;
+  letter-spacing: 0.005em;
+  animation: hintPulse 2.6s ease-in-out infinite;
 }
+@keyframes hintPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
+.bday-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--ink-3);
+  margin-bottom: 16px;
+}
 .bday-title {
   font-family: 'Fraunces', serif;
-  font-variation-settings: 'opsz' 144, 'SOFT' 60;
-  font-size: clamp(2.1rem, 5.5vw, 3rem);
-  font-weight: 700;
+  font-variation-settings: 'opsz' 144, 'SOFT' 90;
+  font-size: clamp(2.4rem, 6.2vw, 3.6rem);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+}
+.bday-title em {
+  font-style: italic;
   color: var(--seal);
-  margin: 8px 0 14px;
-  line-height: 1.05;
-  letter-spacing: -0.025em;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 144, 'SOFT' 100;
 }
 .bday-sub {
   font-family: 'Fraunces', serif;
   font-style: italic;
-  color: var(--ink-2);
   font-size: 1.05rem;
-  margin-bottom: 32px;
-  max-width: 36ch;
-  margin-left: auto;
-  margin-right: auto;
+  color: var(--ink-2);
+  line-height: 1.5;
+  max-width: 32ch;
+  margin: 0 auto 36px;
 }
 .bday-button {
-  padding: 12px 28px;
+  padding: 13px 30px;
   font-size: 0.78rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
 }
 
 @media (max-width: 720px) {
-  .bday-content { padding: 44px 28px 36px; }
-  .gift-icon { font-size: 100px; }
-  .bday-title { font-size: 2rem; }
-  .bday-sub { font-size: 0.95rem; margin-bottom: 24px; }
+  .bday-content { padding: 48px 28px 40px; }
+  .gift-box { width: 150px; height: 165px; }
+  .bday-title { font-size: 2.2rem; }
+  .bday-sub { font-size: 0.96rem; margin-bottom: 28px; }
+  .bday-eyebrow { font-size: 0.6rem; }
 }
 
 /* ── mobile ──────────────────────────────────────────── */
@@ -1297,12 +1357,60 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 <div id="birthday-modal" class="bday-modal" hidden>
   <div class="bday-content">
     <div class="bday-stage stage-gift">
-      <div class="gift-icon" id="gift-icon" role="button" tabindex="0" aria-label="Открыть подарок">🎁</div>
+      <div class="gift-box" id="gift-icon" role="button" tabindex="0" aria-label="Открыть подарок">
+        <svg viewBox="0 0 200 220" class="gift-svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="g-box" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#c25538"/>
+              <stop offset="100%" stop-color="#7d3219"/>
+            </linearGradient>
+            <linearGradient id="g-lid" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#d8694b"/>
+              <stop offset="100%" stop-color="#a8462a"/>
+            </linearGradient>
+            <linearGradient id="g-ribbon" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbf6e8"/>
+              <stop offset="100%" stop-color="#e6dec7"/>
+            </linearGradient>
+            <radialGradient id="g-bow" cx="0.3" cy="0.3">
+              <stop offset="0%" stop-color="#f5e3aa"/>
+              <stop offset="100%" stop-color="#a8862e"/>
+            </radialGradient>
+            <radialGradient id="g-burst" cx="0.5" cy="0.5">
+              <stop offset="0%" stop-color="#ffe6a3" stop-opacity="0.95"/>
+              <stop offset="40%" stop-color="#ffb74a" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#ff9420" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <ellipse class="g-shadow" cx="100" cy="208" rx="58" ry="5" fill="#000" opacity="0.2"/>
+          <circle class="g-burst" cx="100" cy="100" r="58" fill="url(#g-burst)" opacity="0"/>
+          <g class="g-body">
+            <rect x="32" y="92" width="136" height="100" rx="3" fill="url(#g-box)"/>
+            <rect x="92" y="92" width="16" height="100" fill="url(#g-ribbon)"/>
+            <rect x="32" y="92" width="136" height="2" fill="#fff" opacity="0.25"/>
+            <rect x="32" y="92" width="2" height="100" fill="#fff" opacity="0.15"/>
+          </g>
+          <g class="g-lid">
+            <rect x="22" y="62" width="156" height="32" rx="3" fill="url(#g-lid)"/>
+            <rect x="92" y="62" width="16" height="32" fill="url(#g-ribbon)"/>
+            <rect x="22" y="62" width="156" height="2" fill="#fff" opacity="0.28"/>
+          </g>
+          <g class="g-bow">
+            <ellipse cx="78" cy="54" rx="22" ry="14" fill="url(#g-bow)" stroke="#6e5821" stroke-width="0.6"/>
+            <ellipse cx="122" cy="54" rx="22" ry="14" fill="url(#g-bow)" stroke="#6e5821" stroke-width="0.6"/>
+            <ellipse cx="78" cy="54" rx="9" ry="6" fill="#000" opacity="0.18"/>
+            <ellipse cx="122" cy="54" rx="9" ry="6" fill="#000" opacity="0.18"/>
+            <ellipse cx="100" cy="56" rx="10" ry="13" fill="#bfa346" stroke="#6e5821" stroke-width="0.6"/>
+            <ellipse cx="97" cy="52" rx="3" ry="4" fill="#f5e3aa" opacity="0.75"/>
+          </g>
+        </svg>
+      </div>
       <div class="bday-hint">нажми на подарок</div>
     </div>
     <div class="bday-stage stage-message" hidden>
-      <div class="bday-title">С Днём Рождения!</div>
-      <div class="bday-sub">Внутри — приложение для твоего автосервиса</div>
+      <div class="bday-eyebrow">особенный день</div>
+      <div class="bday-title">С Днём <em>Рождения</em></div>
+      <div class="bday-sub">Внутри — приложение для&nbsp;автосервиса. Сделано с любовью.</div>
       <button type="button" class="btn btn-primary bday-button" id="bday-open">Открыть</button>
     </div>
   </div>
@@ -2245,12 +2353,14 @@ function maybeShowBirthday() {
     modal.hidden = false;
 
     const openGift = () => {
-      giftEl.classList.add('bursting');
+      giftEl.classList.add('opening');
+      // Lid + bow lift, body bounces, light burst — total ~1.1s
+      setTimeout(() => fireConfetti(), 700);
+      setTimeout(() => giftEl.classList.add('fading'), 950);
       setTimeout(() => {
         stageGift.hidden = true;
         stageMsg.hidden = false;
-        fireConfetti();
-      }, 700);
+      }, 1300);
     };
     giftEl.addEventListener('click', openGift, { once: true });
     giftEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGift(); } }, { once: true });
