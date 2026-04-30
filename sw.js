@@ -1,6 +1,6 @@
 // Service Worker for offline-first PWA
 // Bump CACHE_VERSION on each release to trigger cache refresh on clients
-const CACHE_VERSION = 'v2-firebase';
+const CACHE_VERSION = 'v4-bday-svg';
 const CACHE = `autoservice-${CACHE_VERSION}`;
 
 const APP_SHELL = [
