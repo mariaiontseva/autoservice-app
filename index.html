@@ -1219,10 +1219,6 @@ import {
   collection, doc, getDoc, getDocs, addDoc, setDoc, deleteDoc,
   query, where
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyBCxBYClpysc2rNrnn55kR7tR7Ut8I4gQ0",
   authDomain: "autoservice-804e1.firebaseapp.com",
@@ -1236,7 +1232,52 @@ const fbApp = initializeApp(firebaseConfig);
 const fbDb = initializeFirestore(fbApp, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
-const fbStorage = getStorage(fbApp);
+
+// ═══ Cloudinary (file storage) ════════════════════════
+const CLOUDINARY = {
+  cloudName: 'dmo0hsg9t',
+  uploadPreset: 'autoservice',
+};
+
+async function cloudinaryUpload(fileOrBlob, resourceType = 'auto') {
+  const fd = new FormData();
+  fd.append('file', fileOrBlob);
+  fd.append('upload_preset', CLOUDINARY.uploadPreset);
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/${resourceType}/upload`;
+  const resp = await fetch(url, { method: 'POST', body: fd });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Cloudinary ${resp.status}: ${text}`);
+  }
+  return resp.json();
+}
+
+async function uploadPhotoFile(file) {
+  // Compress first to save bandwidth (Cloudinary auto-optimizes too but we save uplink)
+  const blob = await compressImageBlob(file, 1600, 0.88);
+  const result = await cloudinaryUpload(blob, 'image');
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+    name: file.name,
+    bytes: result.bytes,
+    width: result.width,
+    height: result.height,
+  };
+}
+
+async function uploadDocumentFile(file) {
+  const result = await cloudinaryUpload(file, 'auto');
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+    resourceType: result.resource_type,
+    format: result.format,
+    name: file.name,
+    type: file.type,
+    bytes: result.bytes,
+  };
+}
 
 // Firestore-backed repo. Same interface as old IndexedDB version.
 const repo = {
@@ -1274,19 +1315,9 @@ const repo = {
   },
 };
 
-// Storage helpers
-async function uploadFile(folder, file, blob) {
-  const safeName = String(file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-  const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
-  const r = storageRef(fbStorage, path);
-  await uploadBytes(r, blob || file, { contentType: file.type || (blob && blob.type) || 'application/octet-stream' });
-  const url = await getDownloadURL(r);
-  return { url, path };
-}
-async function deleteStorageFile(path) {
-  if (!path) return;
-  try { await deleteObject(storageRef(fbStorage, path)); } catch (err) { console.warn('delete failed', path, err); }
-}
+// (Cloudinary delete from browser requires API secret, which we don't expose.
+//  Orphan files stay in Cloudinary on photo/document removal — acceptable
+//  given 25 GB free quota.)
 
 // ═══ Helpers ═════════════════════════════════════════
 const e = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1464,7 +1495,7 @@ function visitHTML(v, opts = {}) {
         ${fields.length ? `<dl class="fields">${fields.map(([k,val])=>`<div class="field-row"><dt>${e(k)}</dt><dd>${e(val)}</dd></div>`).join('')}</dl>` : `<div class="muted" style="font-style:italic">Подробности не заполнены.</div>`}
         ${visitTotalsHTML(v)}
         ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy"><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
-        ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.size)}</span></a>`).join('')}</div></div>` : ''}
+        ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span></a>`).join('')}</div></div>` : ''}
       </div>
       ${opts.actions !== false ? `<div class="visit-actions no-print"><button class="btn btn-text btn-sm" data-print-visit="${v.id}">Печать визита</button><a href="#/visits/${v.id}/edit" class="btn btn-text btn-sm">Редактировать</a><button class="btn btn-text btn-sm btn-danger" data-del-visit="${v.id}">Удалить</button></div>` : ''}
     </article>
@@ -1484,13 +1515,7 @@ function bindVisitActions(reload) {
   document.querySelectorAll('[data-del-visit]').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Удалить визит безвозвратно?')) return;
-      const vid = btn.dataset.delVisit;
-      const v = await repo.get('visits', vid);
-      if (v) {
-        for (const p of (v.photos || [])) deleteStorageFile(p.path);
-        for (const d of (v.documents || [])) deleteStorageFile(d.path);
-      }
-      await repo.del('visits', vid);
+      await repo.del('visits', btn.dataset.delVisit);
       flash('Визит удалён');
       reload && reload();
     });
@@ -1738,11 +1763,7 @@ route('/cards/:id', async ({id}) => {
   document.getElementById('print-card').addEventListener('click', () => window.print());
   document.getElementById('del-card').addEventListener('click', async () => {
     if (!confirm(`Удалить карточку «${card.surname}» вместе со всеми визитами?`)) return;
-    for (const visit of visits) {
-      for (const p of (visit.photos || [])) deleteStorageFile(p.path);
-      for (const d of (visit.documents || [])) deleteStorageFile(d.path);
-      await repo.del('visits', visit.id);
-    }
+    for (const visit of visits) await repo.del('visits', visit.id);
     await repo.del('cards', id);
     flash('Карточка удалена');
     location.hash = '#/cards';
@@ -1887,11 +1908,22 @@ function visitForm(v) {
         <div class="form-section-title">Фото</div>
         <label class="photo-upload" for="photo-input">
           <div class="pu-title">Перетащите фото или нажмите чтобы выбрать</div>
-          <div class="pu-hint">JPEG · PNG · до 4 фото на визит (с Cloudinary будет неограниченно)</div>
+          <div class="pu-hint">JPEG · PNG · сжимаются и загружаются в облако</div>
           <input type="file" id="photo-input" accept="image/*" multiple hidden>
         </label>
         <div class="photo-edit-grid" id="photo-grid"></div>
         <div class="upload-status" id="photo-status" hidden></div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Документы</div>
+        <label class="photo-upload" for="doc-input">
+          <div class="pu-title">PDF, документы, чеки, диагностика</div>
+          <div class="pu-hint">PDF · DOC · XLS · загружаются в облако</div>
+          <input type="file" id="doc-input" accept="application/pdf,.doc,.docx,.xls,.xlsx,.txt,image/*" multiple hidden>
+        </label>
+        <div class="docs-edit-list" id="docs-edit-list"></div>
+        <div class="upload-status" id="doc-status" hidden></div>
       </div>
 
       <div class="form-section">
@@ -1905,12 +1937,13 @@ function visitForm(v) {
     </form>
   `;
 }
-const MAX_PHOTOS = 4;
-
 function bindVisitForm(v) {
   let photos = (v.photos || []).slice();
+  let documents = (v.documents || []).slice();
   const photoGrid = document.getElementById('photo-grid');
+  const docList = document.getElementById('docs-edit-list');
   const photoStatus = document.getElementById('photo-status');
+  const docStatus = document.getElementById('doc-status');
   const setStatus = (el, msg) => { if (msg) { el.textContent = msg; el.hidden = false; } else { el.hidden = true; } };
 
   const renderPhotos = () => {
@@ -1921,43 +1954,80 @@ function bindVisitForm(v) {
         <textarea class="caption-input" data-cap="${i}" placeholder="Подпись…">${e(p.comment||'')}</textarea>
       </div>
     `).join('');
-    photoGrid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
-      photos.splice(Number(b.dataset.rm), 1);
-      renderPhotos();
-    }));
+    photoGrid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { photos.splice(Number(b.dataset.rm), 1); renderPhotos(); }));
     photoGrid.querySelectorAll('[data-cap]').forEach(t => t.addEventListener('input', () => { photos[Number(t.dataset.cap)].comment = t.value; }));
   };
+
+  const renderDocs = () => {
+    docList.innerHTML = documents.map((d, i) => `
+      <div class="doc-edit" data-i="${i}">
+        <span class="doc-icon">${docIcon(d.name)}</span>
+        <a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-name">${e(d.name)}</a>
+        <span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span>
+        <button type="button" class="doc-remove" data-rm="${i}" aria-label="Удалить">×</button>
+      </div>
+    `).join('');
+    docList.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { documents.splice(Number(b.dataset.rm), 1); renderDocs(); }));
+  };
+
   renderPhotos();
+  renderDocs();
 
   const handlePhotos = async (files) => {
     if (!files.length) return;
-    const room = MAX_PHOTOS - photos.length;
-    if (room <= 0) { alert(`Максимум ${MAX_PHOTOS} фото на визит. Удалите ненужные перед загрузкой новых.`); return; }
-    if (files.length > room) { alert(`Можно добавить ещё ${room} фото (всего ${MAX_PHOTOS} на визит).`); files = files.slice(0, room); }
-    setStatus(photoStatus, `Сжатие ${files.length} фото…`);
-    for (const file of files) {
+    setStatus(photoStatus, `Загрузка ${files.length} фото в облако…`);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setStatus(photoStatus, `Загрузка ${i + 1} из ${files.length}…`);
       try {
-        const dataUrl = await compressImageDataUrl(file);
-        photos.push({ dataUrl, comment: '', name: file.name });
+        const photo = await uploadPhotoFile(file);
+        photo.comment = '';
+        photos.push(photo);
         renderPhotos();
       } catch (err) {
-        console.error('photo error', err);
-        alert('Не удалось обработать ' + file.name);
+        console.error('photo upload error', err);
+        alert('Не удалось загрузить ' + file.name + ':\n' + err.message);
       }
     }
     setStatus(photoStatus, '');
   };
 
+  const handleDocs = async (files) => {
+    if (!files.length) return;
+    setStatus(docStatus, `Загрузка ${files.length} документ${files.length === 1 ? 'а' : 'ов'}…`);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setStatus(docStatus, `Загрузка ${i + 1} из ${files.length}…`);
+      try {
+        const doc = await uploadDocumentFile(file);
+        documents.push(doc);
+        renderDocs();
+      } catch (err) {
+        console.error('doc upload error', err);
+        alert('Не удалось загрузить ' + file.name + ':\n' + err.message);
+      }
+    }
+    setStatus(docStatus, '');
+  };
+
   const photoInput = document.getElementById('photo-input');
   photoInput.addEventListener('change', async (ev) => { await handlePhotos(Array.from(ev.target.files || [])); photoInput.value = ''; });
+  const docInput = document.getElementById('doc-input');
+  docInput.addEventListener('change', async (ev) => { await handleDocs(Array.from(ev.target.files || [])); docInput.value = ''; });
 
-  const dropZone = document.querySelector('.photo-upload');
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--seal)'; });
-  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
-  dropZone.addEventListener('drop', async (ev) => {
-    ev.preventDefault(); dropZone.style.borderColor = '';
+  document.querySelectorAll('.photo-upload').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--seal)'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  });
+  document.querySelector('label[for="photo-input"]').addEventListener('drop', async (ev) => {
+    ev.preventDefault(); ev.currentTarget.style.borderColor = '';
     const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
     await handlePhotos(files);
+  });
+  document.querySelector('label[for="doc-input"]').addEventListener('drop', async (ev) => {
+    ev.preventDefault(); ev.currentTarget.style.borderColor = '';
+    const files = Array.from(ev.dataTransfer.files || []);
+    await handleDocs(files);
   });
 
   document.getElementById('visit-form').addEventListener('submit', async (ev) => {
@@ -1969,6 +2039,7 @@ function bindVisitForm(v) {
     data.prepayment = Number(data.prepayment) || 0;
     if (data.visit_date) data.visit_date = new Date(data.visit_date + 'T12:00:00').toISOString();
     data.photos = photos;
+    data.documents = documents;
     if (v.id) { await repo.put('visits', { ...v, ...data }); flash('Визит сохранён'); }
     else      { await repo.add('visits', data); flash('Визит создан'); }
     location.hash = '#/cards/' + v.card_id;
