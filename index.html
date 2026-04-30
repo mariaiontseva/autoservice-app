@@ -14,6 +14,10 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -124,22 +128,13 @@ header {
   padding: 20px 0 18px;
 }
 .brand { display: flex; align-items: baseline; gap: 18px; line-height: 1; }
-.brand-mark {
-  font-family: 'Fraunces', serif;
-  font-variation-settings: 'opsz' 144;
-  font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+.brand-logo {
+  display: block;
+  width: 92px;
+  height: 44px;
+  transition: transform 0.25s var(--ease);
 }
-.brand-mark .dot { color: var(--seal); padding: 0 4px; }
-.brand-sub {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 0.95rem;
-  color: var(--ink-3);
-}
+.brand:hover .brand-logo { transform: translateX(2px) scale(1.02); }
 
 nav.head-nav { display: flex; align-items: center; gap: 4px; }
 .nav-link {
@@ -982,7 +977,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 
   /* Header — clean, brand left, nav right */
   .head-row { padding: 14px 0 12px; gap: 10px; }
-  .brand-mark { font-size: 1.05rem; letter-spacing: 0.04em; }
+  .brand-logo { width: 76px; height: 36px; }
   nav.head-nav { gap: 2px; }
   .nav-link { padding: 7px 10px; font-size: 0.68rem; letter-spacing: 0.1em; }
   .nav-link[data-route="dashboard"] { display: none; } /* brand IS home link */
@@ -1228,7 +1223,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   .h1 { font-size: 1.6rem; }
   .hero-name { font-size: 2rem; }
   .head-row { padding: 12px 0 10px; }
-  .brand-mark { font-size: 0.96rem; }
+  .brand-logo { width: 64px; height: 30px; }
   .head-nav .btn { padding: 8px 11px; font-size: 0.62rem; letter-spacing: 0.06em; }
   .nav-link { padding: 6px 8px; font-size: 0.64rem; }
   .stat-value { font-size: 1.55rem; }
@@ -1339,8 +1334,26 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 
 <header class="no-print">
   <div class="shell head-row">
-    <a href="#/" class="brand" aria-label="На главную">
-      <span class="brand-mark">АВТОСЕРВИС<span class="dot">·</span></span>
+    <a href="#/" class="brand" aria-label="Автосервис · на главную">
+      <svg viewBox="0 0 100 48" class="brand-logo" aria-hidden="true">
+        <!-- car body -->
+        <path d="M 6 36 L 6 30 Q 8 24 14 23 L 24 16 Q 30 12 38 11 L 58 11 Q 67 12 72 17 L 80 23 L 88 25 L 92 30 L 94 36 Z"
+              fill="var(--ink)"/>
+        <!-- windows cut-out -->
+        <path d="M 28 20 Q 32 15 38 14 L 56 14 Q 63 15 67 20 Z"
+              fill="var(--paper)"/>
+        <!-- pillar between front/rear window -->
+        <line x1="46" y1="14" x2="46" y2="20" stroke="var(--ink)" stroke-width="1.4"/>
+        <!-- front bumper accent -->
+        <rect x="91" y="30" width="3" height="3" fill="var(--seal)"/>
+        <!-- wheels -->
+        <circle cx="24" cy="38" r="7" fill="var(--ink)"/>
+        <circle cx="24" cy="38" r="2.6" fill="var(--paper)"/>
+        <circle cx="76" cy="38" r="7" fill="var(--ink)"/>
+        <circle cx="76" cy="38" r="2.6" fill="var(--paper)"/>
+        <!-- ground line -->
+        <line x1="0" y1="46" x2="100" y2="46" stroke="var(--ink)" stroke-width="1" opacity="0.25"/>
+      </svg>
     </a>
     <nav class="head-nav">
       <a href="#/" class="nav-link" data-route="dashboard">Сводка</a>
