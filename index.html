@@ -895,19 +895,19 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 .gift-box.opening { animation: none; pointer-events: none; }
 .gift-svg { width: 100%; height: 100%; overflow: visible; display: block; pointer-events: none; }
 .gift-svg .g-lid, .gift-svg .g-bow {
-  transform-origin: 100px 80px;
-  transition: transform 0.85s cubic-bezier(0.18, 1.15, 0.32, 1);
+  transform-origin: 120px 105px;
+  transition: transform 0.9s cubic-bezier(0.18, 1.15, 0.32, 1);
 }
-.gift-box.opening .g-lid { transform: translate(-12px, -58px) rotate(-14deg); }
-.gift-box.opening .g-bow { transform: translate(-16px, -86px) rotate(-18deg); }
-.gift-svg .g-body { transform-origin: 100px 192px; }
+.gift-box.opening .g-lid { transform: translate(-14px, -68px) rotate(-13deg); }
+.gift-box.opening .g-bow { transform: translate(-18px, -100px) rotate(-17deg); }
+.gift-svg .g-body { transform-origin: 120px 258px; }
 .gift-box.opening .g-body { animation: giftBodyBounce 0.55s 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes giftBodyBounce {
   0%   { transform: scaleY(1) scaleX(1); }
   40%  { transform: scaleY(1.07) scaleX(0.94); }
   100% { transform: scaleY(1) scaleX(1); }
 }
-.gift-svg .g-burst { transform-origin: 100px 100px; }
+.gift-svg .g-burst { transform-origin: 120px 135px; }
 .gift-box.opening .g-burst { animation: giftBurstFlash 1s 0.2s ease-out forwards; }
 @keyframes giftBurstFlash {
   0%   { opacity: 0; transform: scale(0.2); }
@@ -1358,50 +1358,96 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   <div class="bday-content">
     <div class="bday-stage stage-gift">
       <div class="gift-box" id="gift-icon" role="button" tabindex="0" aria-label="Открыть подарок">
-        <svg viewBox="0 0 200 220" class="gift-svg" aria-hidden="true">
+        <svg viewBox="0 0 240 280" class="gift-svg" aria-hidden="true">
           <defs>
-            <linearGradient id="g-box" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#c25538"/>
+            <linearGradient id="g-box-front" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"  stop-color="#b04826"/>
+              <stop offset="55%" stop-color="#8a3819"/>
+              <stop offset="100%" stop-color="#5d2410"/>
+            </linearGradient>
+            <linearGradient id="g-lid-front" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"  stop-color="#c25538"/>
+              <stop offset="65%" stop-color="#a8462a"/>
               <stop offset="100%" stop-color="#7d3219"/>
             </linearGradient>
-            <linearGradient id="g-lid" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#d8694b"/>
-              <stop offset="100%" stop-color="#a8462a"/>
-            </linearGradient>
             <linearGradient id="g-ribbon" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fbf6e8"/>
-              <stop offset="100%" stop-color="#e6dec7"/>
+              <stop offset="0%"  stop-color="#fcf6e0"/>
+              <stop offset="50%" stop-color="#e8dcb2"/>
+              <stop offset="100%" stop-color="#bfa874"/>
             </linearGradient>
-            <radialGradient id="g-bow" cx="0.3" cy="0.3">
-              <stop offset="0%" stop-color="#f5e3aa"/>
-              <stop offset="100%" stop-color="#a8862e"/>
-            </radialGradient>
+            <linearGradient id="g-bow" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"  stop-color="#fbe9aa"/>
+              <stop offset="50%" stop-color="#d4b256"/>
+              <stop offset="100%" stop-color="#8a6a1f"/>
+            </linearGradient>
             <radialGradient id="g-burst" cx="0.5" cy="0.5">
-              <stop offset="0%" stop-color="#ffe6a3" stop-opacity="0.95"/>
-              <stop offset="40%" stop-color="#ffb74a" stop-opacity="0.55"/>
+              <stop offset="0%"   stop-color="#fff2c9" stop-opacity="0.95"/>
+              <stop offset="40%"  stop-color="#ffc66c" stop-opacity="0.6"/>
               <stop offset="100%" stop-color="#ff9420" stop-opacity="0"/>
             </radialGradient>
           </defs>
-          <ellipse class="g-shadow" cx="100" cy="208" rx="58" ry="5" fill="#000" opacity="0.2"/>
-          <circle class="g-burst" cx="100" cy="100" r="58" fill="url(#g-burst)" opacity="0"/>
+
+          <!-- ground shadow -->
+          <ellipse cx="120" cy="266" rx="80" ry="6" fill="#000" opacity="0.22"/>
+
+          <!-- inner light burst (animated) -->
+          <circle class="g-burst" cx="120" cy="135" r="70" fill="url(#g-burst)" opacity="0"/>
+
+          <!-- BOX BODY -->
           <g class="g-body">
-            <rect x="32" y="92" width="136" height="100" rx="3" fill="url(#g-box)"/>
-            <rect x="92" y="92" width="16" height="100" fill="url(#g-ribbon)"/>
-            <rect x="32" y="92" width="136" height="2" fill="#fff" opacity="0.25"/>
-            <rect x="32" y="92" width="2" height="100" fill="#fff" opacity="0.15"/>
+            <rect x="36" y="120" width="168" height="138" rx="4" fill="url(#g-box-front)"/>
+            <!-- top edge highlight -->
+            <rect x="36" y="120" width="168" height="3" fill="#fff" opacity="0.32"/>
+            <!-- left edge highlight -->
+            <rect x="36" y="120" width="3" height="138" fill="#fff" opacity="0.18"/>
+            <!-- right edge shadow -->
+            <rect x="201" y="120" width="3" height="138" fill="#000" opacity="0.18"/>
+            <!-- vertical ribbon -->
+            <rect x="105" y="120" width="30" height="138" fill="url(#g-ribbon)"/>
+            <rect x="105" y="120" width="2"  height="138" fill="#fff" opacity="0.55"/>
+            <rect x="133" y="120" width="2"  height="138" fill="#000" opacity="0.18"/>
           </g>
+
+          <!-- LID -->
           <g class="g-lid">
-            <rect x="22" y="62" width="156" height="32" rx="3" fill="url(#g-lid)"/>
-            <rect x="92" y="62" width="16" height="32" fill="url(#g-ribbon)"/>
-            <rect x="22" y="62" width="156" height="2" fill="#fff" opacity="0.28"/>
+            <rect x="22" y="84" width="196" height="42" rx="4" fill="url(#g-lid-front)"/>
+            <rect x="22" y="84" width="196" height="3" fill="#fff" opacity="0.4"/>
+            <rect x="22" y="84" width="3" height="42" fill="#fff" opacity="0.22"/>
+            <rect x="215" y="84" width="3" height="42" fill="#000" opacity="0.2"/>
+            <!-- under-edge shadow -->
+            <rect x="22" y="123" width="196" height="3" fill="#000" opacity="0.22"/>
+            <!-- vertical ribbon on lid -->
+            <rect x="105" y="84" width="30" height="42" fill="url(#g-ribbon)"/>
+            <rect x="105" y="84" width="2"  height="42" fill="#fff" opacity="0.55"/>
           </g>
+
+          <!-- BOW -->
           <g class="g-bow">
-            <ellipse cx="78" cy="54" rx="22" ry="14" fill="url(#g-bow)" stroke="#6e5821" stroke-width="0.6"/>
-            <ellipse cx="122" cy="54" rx="22" ry="14" fill="url(#g-bow)" stroke="#6e5821" stroke-width="0.6"/>
-            <ellipse cx="78" cy="54" rx="9" ry="6" fill="#000" opacity="0.18"/>
-            <ellipse cx="122" cy="54" rx="9" ry="6" fill="#000" opacity="0.18"/>
-            <ellipse cx="100" cy="56" rx="10" ry="13" fill="#bfa346" stroke="#6e5821" stroke-width="0.6"/>
-            <ellipse cx="97" cy="52" rx="3" ry="4" fill="#f5e3aa" opacity="0.75"/>
+            <!-- left ribbon tail -->
+            <path d="M 110 84 Q 96 100 98 116 L 112 110 Q 113 96 116 86 Z"
+              fill="url(#g-ribbon)" stroke="#7a6322" stroke-width="0.6"/>
+            <!-- right ribbon tail -->
+            <path d="M 130 84 Q 144 100 142 116 L 128 110 Q 127 96 124 86 Z"
+              fill="url(#g-ribbon)" stroke="#7a6322" stroke-width="0.6"/>
+
+            <!-- left loop -->
+            <path d="M 117 64 C 70 38 56 78 78 86 C 96 92 112 80 120 70 Z"
+              fill="url(#g-bow)" stroke="#7a6322" stroke-width="0.7"/>
+            <!-- inner shadow -->
+            <path d="M 117 64 C 92 56 78 72 88 80 C 100 86 110 78 117 70 Z"
+              fill="#000" opacity="0.18"/>
+
+            <!-- right loop -->
+            <path d="M 123 64 C 170 38 184 78 162 86 C 144 92 128 80 120 70 Z"
+              fill="url(#g-bow)" stroke="#7a6322" stroke-width="0.7"/>
+            <!-- inner shadow -->
+            <path d="M 123 64 C 148 56 162 72 152 80 C 140 86 130 78 123 70 Z"
+              fill="#000" opacity="0.18"/>
+
+            <!-- center knot -->
+            <ellipse cx="120" cy="68" rx="10" ry="14"
+              fill="url(#g-bow)" stroke="#7a6322" stroke-width="0.7"/>
+            <ellipse cx="116" cy="64" rx="3" ry="5" fill="#fff" opacity="0.55"/>
           </g>
         </svg>
       </div>
