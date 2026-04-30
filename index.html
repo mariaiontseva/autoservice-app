@@ -1453,7 +1453,6 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     </div>
     <div class="bday-stage stage-message" hidden>
       <div class="bday-title">С Днём Рождения!</div>
-      <div class="bday-sub">Карточки клиентов&nbsp;· фото&nbsp;· история работ. Открой и&nbsp;пользуйся.</div>
       <button type="button" class="btn btn-primary bday-button" id="bday-open">Открыть</button>
     </div>
   </div>
@@ -1461,11 +1460,10 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 
 <footer class="no-print">
   <div class="shell foot">
-    <div>Локально · данные хранятся в браузере</div>
+    <div>Облачная база · работает офлайн</div>
     <div>
       <a href="#" id="backup">бэкап</a> ·
       <a href="#" id="restore">восстановить</a> ·
-      <a href="#" id="reseed">демо</a> ·
       <a href="#" id="clear-all">очистить</a>
       <input type="file" id="restore-input" accept="application/json" hidden>
     </div>
@@ -2385,8 +2383,7 @@ function fireConfetti() {
 }
 
 function maybeShowBirthday() {
-  // DEBUG: temporarily always show. Restore localStorage check once verified.
-  // if (localStorage.getItem(BDAY_FLAG)) return Promise.resolve();
+  if (localStorage.getItem(BDAY_FLAG)) return Promise.resolve();
   return new Promise((resolve) => {
     const modal = document.getElementById('birthday-modal');
     const giftEl = document.getElementById('gift-icon');
@@ -2456,17 +2453,6 @@ document.getElementById('restore-input').addEventListener('change', async (ev) =
     flash('Восстановлено');
     setTimeout(() => location.reload(), 600);
   } catch (err) { alert('Ошибка: ' + err.message); }
-});
-
-document.getElementById('reseed').addEventListener('click', async (ev) => {
-  ev.preventDefault();
-  const cards = await repo.list('cards');
-  if (cards.length > 0 && !confirm('Это очистит все текущие данные и загрузит примеры заново. Продолжить?')) return;
-  await Promise.all(['cards','visits'].map(s => repo.clear(s)));
-  await seedDemo();
-  localStorage.setItem('garage_firestore_seeded', '1');
-  flash('Демо данные загружены');
-  dispatch();
 });
 
 document.getElementById('clear-all').addEventListener('click', async (ev) => {
