@@ -1325,9 +1325,9 @@ async function compressImageBlob(file, maxDim = 1280, quality = 0.82) {
 }
 
 // Returns base64 data URL (used when storing photo inline in Firestore)
-// Aggressive compression: 800px max, q 0.7 → ~50 KB per photo → ~67 KB base64.
-// Firestore doc limit is 1 MB so ~10-12 photos per visit max.
-async function compressImageDataUrl(file, maxDim = 800, quality = 0.72) {
+// 1280px max, q 0.85 → ~150-220 KB per photo (~200-300 KB base64).
+// Firestore doc limit is 1 MB so we cap at MAX_PHOTOS per visit.
+async function compressImageDataUrl(file, maxDim = 1280, quality = 0.85) {
   const canvas = await _drawCompressed(file, maxDim, quality);
   return canvas.toDataURL('image/jpeg', quality);
 }
@@ -1887,7 +1887,7 @@ function visitForm(v) {
         <div class="form-section-title">Фото</div>
         <label class="photo-upload" for="photo-input">
           <div class="pu-title">Перетащите фото или нажмите чтобы выбрать</div>
-          <div class="pu-hint">JPEG · PNG · до 10 фото на визит · сжимаются автоматически</div>
+          <div class="pu-hint">JPEG · PNG · до 4 фото на визит (с Cloudinary будет неограниченно)</div>
           <input type="file" id="photo-input" accept="image/*" multiple hidden>
         </label>
         <div class="photo-edit-grid" id="photo-grid"></div>
@@ -1905,7 +1905,7 @@ function visitForm(v) {
     </form>
   `;
 }
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 4;
 
 function bindVisitForm(v) {
   let photos = (v.photos || []).slice();
