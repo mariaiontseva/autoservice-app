@@ -2444,6 +2444,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // ═══ Service Worker registration (PWA / offline) ══════
 if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'sw-updated') {
+      // New SW took over — reload to pick up the latest assets.
+      location.reload();
+    }
+  });
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
