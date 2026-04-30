@@ -873,26 +873,31 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 .bday-stage { animation: stageFadeIn 0.55s var(--ease); }
 @keyframes stageFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Gift box (SVG) */
-.gift-box {
+/* Gift box (SVG) — outer wrapper handles continuous bob,
+   inner handles hover scale, separately to avoid clash. */
+.gift-bob {
   display: inline-block;
-  width: 180px; height: 198px;
-  cursor: pointer;
-  position: relative;
-  filter: drop-shadow(0 18px 28px rgba(28,25,23,0.22));
-  transition: transform 0.35s var(--ease), filter 0.35s var(--ease);
   animation: giftFloat 3.6s ease-in-out infinite;
 }
 @keyframes giftFloat {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50%      { transform: translateY(-10px) rotate(2deg); }
 }
-.gift-box:hover {
-  animation: none;
-  transform: translateY(-6px) scale(1.04) rotate(-1.5deg);
-  filter: drop-shadow(0 26px 40px rgba(168,70,42,0.4));
+.gift-box {
+  display: inline-block;
+  width: 180px; height: 198px;
+  cursor: pointer;
+  position: relative;
+  filter: drop-shadow(0 18px 28px rgba(28,25,23,0.22));
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.45s var(--ease);
 }
-.gift-box.opening { animation: none; pointer-events: none; }
+.gift-box:hover {
+  transform: scale(1.06);
+  filter: drop-shadow(0 26px 40px rgba(168,70,42,0.38));
+}
+.gift-box:active { transform: scale(1.02); }
+.gift-box.opening { pointer-events: none; }
+.gift-bob:has(.gift-box.opening) { animation: none; }
 .gift-svg { width: 100%; height: 100%; overflow: visible; display: block; pointer-events: none; }
 .gift-svg .g-lid, .gift-svg .g-bow {
   transform-origin: 120px 105px;
@@ -1357,7 +1362,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 <div id="birthday-modal" class="bday-modal" hidden>
   <div class="bday-content">
     <div class="bday-stage stage-gift">
-      <div class="gift-box" id="gift-icon" role="button" tabindex="0" aria-label="Открыть подарок">
+      <div class="gift-bob"><div class="gift-box" id="gift-icon" role="button" tabindex="0" aria-label="Открыть подарок">
         <svg viewBox="0 0 240 280" class="gift-svg" aria-hidden="true">
           <defs>
             <linearGradient id="g-box-front" x1="0" y1="0" x2="0" y2="1">
@@ -1450,7 +1455,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
             <ellipse cx="116" cy="64" rx="3" ry="5" fill="#fff" opacity="0.55"/>
           </g>
         </svg>
-      </div>
+      </div></div>
       <div class="bday-hint">нажми на подарок</div>
     </div>
     <div class="bday-stage stage-message" hidden>
