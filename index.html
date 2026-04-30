@@ -1464,7 +1464,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     <div>
       <a href="#" id="backup">бэкап</a> ·
       <a href="#" id="restore">восстановить</a> ·
-      <a href="#" id="clear-all">очистить</a>
+      <a href="#" id="clear-demo">очистить демо</a>
       <input type="file" id="restore-input" accept="application/json" hidden>
     </div>
   </div>
@@ -2362,14 +2362,23 @@ async function seedDemo() {
   ];
 
   for (const item of seed) {
-    const cardId = await repo.add('cards', item.card);
+    const cardId = await repo.add('cards', { ...item.card, is_demo: true });
     for (const v of item.visits) {
-      const visit = { card_id: cardId, ...v, photos: [] };
+      const visit = { card_id: cardId, ...v, photos: [], is_demo: true };
       visit.visit_date = ago(visit.daysAgo);
       delete visit.daysAgo;
       await repo.add('visits', visit);
     }
   }
+}
+
+async function clearDemoData() {
+  const [cards, visits] = await Promise.all([repo.list('cards'), repo.list('visits')]);
+  const demoCards = cards.filter(c => c.is_demo);
+  const demoVisits = visits.filter(v => v.is_demo);
+  for (const v of demoVisits) await repo.del('visits', v.id);
+  for (const c of demoCards) await repo.del('cards', c.id);
+  return { cards: demoCards.length, visits: demoVisits.length };
 }
 
 // ═══ Birthday popup (first launch) ════════════════════
@@ -2455,14 +2464,16 @@ document.getElementById('restore-input').addEventListener('change', async (ev) =
   } catch (err) { alert('Ошибка: ' + err.message); }
 });
 
-document.getElementById('clear-all').addEventListener('click', async (ev) => {
+document.getElementById('clear-demo').addEventListener('click', async (ev) => {
   ev.preventDefault();
-  if (!confirm('Удалить ВСЕ карточки и визиты безвозвратно? Это нельзя отменить.')) return;
-  if (!confirm('Точно? Все данные будут стёрты.')) return;
-  await Promise.all(['cards','visits'].map(s => repo.clear(s)));
-  localStorage.setItem('garage_firestore_seeded', '1');
-  flash('База очищена');
-  setTimeout(() => location.reload(), 800);
+  if (!confirm('Удалить только демо-клиентов (Иванов, Петрова и др)? Ваши собственные карточки останутся нетронутыми.')) return;
+  const { cards, visits } = await clearDemoData();
+  if (cards === 0 && visits === 0) {
+    flash('Демо-данных нет');
+  } else {
+    flash(`Удалено: ${cards} клиент${cards === 1 ? '' : cards > 1 && cards < 5 ? 'а' : 'ов'}`);
+    setTimeout(() => location.reload(), 800);
+  }
 });
 
 // ═══ Boot ═════════════════════════════════════════════
