@@ -479,8 +479,8 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
 }
 
 /* ── photos ──────────────────────────────────────────── */
-.photos { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--rule-soft); }
-.photos-head {
+.photos, .docs { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--rule-soft); }
+.photos-head, .docs-head {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.66rem;
   text-transform: uppercase;
@@ -489,7 +489,53 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   font-weight: 500;
   margin-bottom: 12px;
 }
-.photos-head .accent { color: var(--seal); font-weight: 700; }
+.photos-head .accent, .docs-head .accent { color: var(--seal); font-weight: 700; }
+
+/* Documents — list of file items (view + edit modes) */
+.docs-list, .docs-edit-list { display: flex; flex-direction: column; gap: 8px; }
+.doc-item, .doc-edit {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: var(--paper-input);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  font-size: 0.92rem;
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.15s var(--ease);
+}
+.doc-item:hover, .doc-edit:hover { border-color: var(--ink-3); color: var(--seal); }
+.doc-item .doc-icon, .doc-edit .doc-icon { font-size: 1.1rem; flex-shrink: 0; }
+.doc-item .doc-name, .doc-edit .doc-name {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: inherit; text-decoration: none;
+}
+.doc-item .doc-meta, .doc-edit .doc-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+.doc-edit .doc-remove {
+  background: none; border: none;
+  font-size: 1.1rem; line-height: 1;
+  color: var(--ink-3); cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.doc-edit .doc-remove:hover { background: var(--seal-soft); color: var(--seal); }
+
+.upload-status {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--seal);
+  font-weight: 500;
+}
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
 .photo-thumb {
   background: var(--paper);
@@ -1166,37 +1212,81 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 </footer>
 
 <script type="module">
-// ═══ IndexedDB ═══════════════════════════════════════
-const DB_NAME = 'garage_v1';
-const DB_VERSION = 1;
+// ═══ Firebase init ════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, getDoc, getDocs, addDoc, setDoc, deleteDoc,
+  query, where
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (ev) => {
-      const db = ev.target.result;
-      if (!db.objectStoreNames.contains('cards')) db.createObjectStore('cards', { keyPath: 'id', autoIncrement: true });
-      if (!db.objectStoreNames.contains('visits')) {
-        const s = db.createObjectStore('visits', { keyPath: 'id', autoIncrement: true });
-        s.createIndex('card_id', 'card_id', { unique: false });
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-let _db;
-async function db() { if (!_db) _db = await openDB(); return _db; }
-function reqP(req) { return new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); }); }
-const repo = {
-  async list(s)      { const d = await db(); return reqP(d.transaction(s).objectStore(s).getAll()); },
-  async get(s, id)   { const d = await db(); return reqP(d.transaction(s).objectStore(s).get(Number(id))); },
-  async byIdx(s,i,v) { const d = await db(); return reqP(d.transaction(s).objectStore(s).index(i).getAll(Number(v))); },
-  async add(s, o)    { const d = await db(); if (!o.created_at) o.created_at = new Date().toISOString(); return reqP(d.transaction(s, 'readwrite').objectStore(s).add(o)); },
-  async put(s, o)    { const d = await db(); return reqP(d.transaction(s, 'readwrite').objectStore(s).put(o)); },
-  async del(s, id)   { const d = await db(); return reqP(d.transaction(s, 'readwrite').objectStore(s).delete(Number(id))); },
-  async clear(s)     { const d = await db(); return reqP(d.transaction(s, 'readwrite').objectStore(s).clear()); },
+const firebaseConfig = {
+  apiKey: "AIzaSyBCxBYClpysc2rNrnn55kR7tR7Ut8I4gQ0",
+  authDomain: "autoservice-804e1.firebaseapp.com",
+  projectId: "autoservice-804e1",
+  storageBucket: "autoservice-804e1.firebasestorage.app",
+  messagingSenderId: "345174163244",
+  appId: "1:345174163244:web:8264319e7ecf1e03363689"
 };
+
+const fbApp = initializeApp(firebaseConfig);
+const fbDb = initializeFirestore(fbApp, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+const fbStorage = getStorage(fbApp);
+
+// Firestore-backed repo. Same interface as old IndexedDB version.
+const repo = {
+  async list(name) {
+    const snap = await getDocs(collection(fbDb, name));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  },
+  async get(name, id) {
+    if (!id) return null;
+    const snap = await getDoc(doc(fbDb, name, String(id)));
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  },
+  async byIdx(name, field, value) {
+    const q = query(collection(fbDb, name), where(field, '==', String(value)));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  },
+  async add(name, obj) {
+    if (!obj.created_at) obj.created_at = new Date().toISOString();
+    const docRef = await addDoc(collection(fbDb, name), obj);
+    return docRef.id;
+  },
+  async put(name, obj) {
+    const { id, ...data } = obj;
+    if (!id) throw new Error('put requires id');
+    await setDoc(doc(fbDb, name, String(id)), data);
+    return id;
+  },
+  async del(name, id) {
+    await deleteDoc(doc(fbDb, name, String(id)));
+  },
+  async clear(name) {
+    const snap = await getDocs(collection(fbDb, name));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+  },
+};
+
+// Storage helpers
+async function uploadFile(folder, file, blob) {
+  const safeName = String(file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+  const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
+  const r = storageRef(fbStorage, path);
+  await uploadBytes(r, blob || file, { contentType: file.type || (blob && blob.type) || 'application/octet-stream' });
+  const url = await getDownloadURL(r);
+  return { url, path };
+}
+async function deleteStorageFile(path) {
+  if (!path) return;
+  try { await deleteObject(storageRef(fbStorage, path)); } catch (err) { console.warn('delete failed', path, err); }
+}
 
 // ═══ Helpers ═════════════════════════════════════════
 const e = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1215,7 +1305,7 @@ const stamp = (s, vid) => `<span class="stamp ${STATUS[s]?.cls || 'stamp-done'}"
 function plural(n, forms) { const a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return forms[2]; if (b > 1 && b < 5) return forms[1]; if (b === 1) return forms[0]; return forms[2]; }
 function flash(msg) { const f = document.createElement('div'); f.className = 'flash'; f.textContent = msg; document.body.appendChild(f); setTimeout(() => f.remove(), 2000); }
 
-async function compressImage(file, maxDim = 1280, quality = 0.82) {
+async function compressImageBlob(file, maxDim = 1280, quality = 0.82) {
   const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(file); });
   const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('image load failed')); i.src = dataUrl; });
   let { width: w, height: h } = img;
@@ -1225,8 +1315,18 @@ async function compressImage(file, maxDim = 1280, quality = 0.82) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, 0, 0, w, h);
-  return canvas.toDataURL('image/jpeg', quality);
+  return new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
 }
+
+function fmtBytes(n) {
+  n = Number(n) || 0;
+  if (n < 1024) return n + ' Б';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' КБ';
+  return (n / (1024 * 1024)).toFixed(1) + ' МБ';
+}
+
+const DOC_ICONS = { pdf: '📄', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊', txt: '📃', jpg: '🖼', jpeg: '🖼', png: '🖼' };
+function docIcon(name) { const ext = String(name||'').split('.').pop().toLowerCase(); return DOC_ICONS[ext] || '📎'; }
 
 // Phone mask: +7 (XXX) XXX-XX-XX
 function formatPhone(v) {
@@ -1349,7 +1449,8 @@ function visitHTML(v, opts = {}) {
       <div class="visit-body">
         ${fields.length ? `<dl class="fields">${fields.map(([k,val])=>`<div class="field-row"><dt>${e(k)}</dt><dd>${e(val)}</dd></div>`).join('')}</dl>` : `<div class="muted" style="font-style:italic">Подробности не заполнены.</div>`}
         ${visitTotalsHTML(v)}
-        ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.dataUrl)}" alt=""><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
+        ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy"><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
+        ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.size)}</span></a>`).join('')}</div></div>` : ''}
       </div>
       ${opts.actions !== false ? `<div class="visit-actions no-print"><button class="btn btn-text btn-sm" data-print-visit="${v.id}">Печать визита</button><a href="#/visits/${v.id}/edit" class="btn btn-text btn-sm">Редактировать</a><button class="btn btn-text btn-sm btn-danger" data-del-visit="${v.id}">Удалить</button></div>` : ''}
     </article>
@@ -1369,19 +1470,26 @@ function bindVisitActions(reload) {
   document.querySelectorAll('[data-del-visit]').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Удалить визит безвозвратно?')) return;
-      await repo.del('visits', btn.dataset.delVisit);
+      const vid = btn.dataset.delVisit;
+      const v = await repo.get('visits', vid);
+      if (v) {
+        for (const p of (v.photos || [])) deleteStorageFile(p.path);
+        for (const d of (v.documents || [])) deleteStorageFile(d.path);
+      }
+      await repo.del('visits', vid);
       flash('Визит удалён');
       reload && reload();
     });
   });
   document.querySelectorAll('.photo-thumb').forEach(el => {
     el.addEventListener('click', async () => {
-      const v = await repo.get('visits', Number(el.dataset.vid));
+      const v = await repo.get('visits', el.dataset.vid);
       const p = (v?.photos || [])[Number(el.dataset.pi)];
       if (!p) return;
+      const src = p.url || p.dataUrl;
       const lb = document.createElement('div');
       lb.className = 'lightbox';
-      lb.innerHTML = `<img src="${e(p.dataUrl)}" alt="">${p.comment ? `<div class="lb-cap">${e(p.comment)}</div>` : ''}`;
+      lb.innerHTML = `<img src="${e(src)}" alt="">${p.comment ? `<div class="lb-cap">${e(p.comment)}</div>` : ''}`;
       lb.addEventListener('click', () => lb.remove());
       document.body.appendChild(lb);
     });
@@ -1546,8 +1654,8 @@ route('/cards', async () => {
     if (filtered.length === 0) { out.innerHTML = `<div class="empty"><div class="empty-title">Ничего не найдено</div><div class="empty-hint">Попробуйте другой запрос</div></div>`; return; }
     out.innerHTML = `
       <table class="ledger">
-        <thead><tr><th style="width:60px">№</th><th>Клиент</th><th>Телефон</th><th>Машина</th><th>Гос. номер</th><th class="right" style="width:80px">Визиты</th><th style="width:110px">Последний</th></tr></thead>
-        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-num">${String(c.id).padStart(3,'0')}</td><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
+        <thead><tr><th>Клиент</th><th>Телефон</th><th>Машина</th><th>Гос. номер</th><th class="right" style="width:80px">Визиты</th><th style="width:110px">Последний</th></tr></thead>
+        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
       </table>
     `;
     bindRowClicks();
@@ -1580,9 +1688,8 @@ route('/cards/:id', async ({id}) => {
 
     <section class="hero">
       <div class="hero-meta">
-        <span class="num-badge">№ ${String(card.id).padStart(3,'0')}</span>
-        ${since ? `<span class="sep">·</span><span>с ${since}</span>` : ''}
-        <span class="sep">·</span><span>${visits.length} ${plural(visits.length, ['визит','визита','визитов'])}</span>
+        ${since ? `<span>с ${since}</span><span class="sep">·</span>` : ''}
+        <span>${visits.length} ${plural(visits.length, ['визит','визита','визитов'])}</span>
       </div>
       <h1 class="hero-name">${e(card.surname || '—')}${card.first_name ? `<span class="hero-given">${e(card.first_name)}</span>` : ''}</h1>
       ${card.phone ? `<div class="hero-phone">${e(card.phone)}</div>` : ''}
@@ -1617,7 +1724,11 @@ route('/cards/:id', async ({id}) => {
   document.getElementById('print-card').addEventListener('click', () => window.print());
   document.getElementById('del-card').addEventListener('click', async () => {
     if (!confirm(`Удалить карточку «${card.surname}» вместе со всеми визитами?`)) return;
-    for (const v of visits) await repo.del('visits', v.id);
+    for (const visit of visits) {
+      for (const p of (visit.photos || [])) deleteStorageFile(p.path);
+      for (const d of (visit.documents || [])) deleteStorageFile(d.path);
+      await repo.del('visits', visit.id);
+    }
     await repo.del('cards', id);
     flash('Карточка удалена');
     location.hash = '#/cards';
@@ -1695,7 +1806,7 @@ route('/cards/:id/visits/new', async ({id}) => {
   const card = await repo.get('cards', id);
   if (!card) { app.innerHTML = '<div class="empty"><div class="empty-title">Карточка не найдена</div></div>'; return; }
   const today = new Date().toISOString().slice(0,10);
-  const draft = { card_id: Number(id), visit_date: today, status: 'in_progress', cost: 0, prepayment: 0, photos: [] };
+  const draft = { card_id: id, visit_date: today, status: 'in_progress', cost: 0, prepayment: 0, photos: [], documents: [] };
   app.innerHTML = `
     <section class="page-head">
       <div class="crumbs"><a href="#/cards/${id}">← ${e(card.surname || 'Карточка')}</a> · новый визит</div>
@@ -1762,10 +1873,22 @@ function visitForm(v) {
         <div class="form-section-title">Фото</div>
         <label class="photo-upload" for="photo-input">
           <div class="pu-title">Перетащите фото или нажмите чтобы выбрать</div>
-          <div class="pu-hint">JPEG · PNG · можно несколько · сжимаются автоматически</div>
+          <div class="pu-hint">JPEG · PNG · сжимаются и загружаются в облако</div>
           <input type="file" id="photo-input" accept="image/*" multiple hidden>
         </label>
         <div class="photo-edit-grid" id="photo-grid"></div>
+        <div class="upload-status" id="photo-status" hidden></div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Документы</div>
+        <label class="photo-upload" for="doc-input">
+          <div class="pu-title">PDF, документы, чеки, диагностика</div>
+          <div class="pu-hint">PDF · DOC · XLS · фото · загружаются в облако</div>
+          <input type="file" id="doc-input" accept="application/pdf,.doc,.docx,.xls,.xlsx,.txt,image/*" multiple hidden>
+        </label>
+        <div class="docs-edit-list" id="docs-edit-list"></div>
+        <div class="upload-status" id="doc-status" hidden></div>
       </div>
 
       <div class="form-section">
@@ -1781,34 +1904,105 @@ function visitForm(v) {
 }
 function bindVisitForm(v) {
   let photos = (v.photos || []).slice();
-  const grid = document.getElementById('photo-grid');
+  let documents = (v.documents || []).slice();
+  const photoGrid = document.getElementById('photo-grid');
+  const docList = document.getElementById('docs-edit-list');
+  const photoStatus = document.getElementById('photo-status');
+  const docStatus = document.getElementById('doc-status');
+  const setStatus = (el, msg) => { if (msg) { el.textContent = msg; el.hidden = false; } else { el.hidden = true; } };
 
   const renderPhotos = () => {
-    grid.innerHTML = photos.map((p, i) => `
+    photoGrid.innerHTML = photos.map((p, i) => `
       <div class="photo-edit" data-i="${i}">
         <button type="button" class="photo-remove" data-rm="${i}" aria-label="Удалить">×</button>
-        <img src="${e(p.dataUrl)}" alt="">
+        <img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy">
         <textarea class="caption-input" data-cap="${i}" placeholder="Подпись…">${e(p.comment||'')}</textarea>
       </div>
     `).join('');
-    grid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { photos.splice(Number(b.dataset.rm), 1); renderPhotos(); }));
-    grid.querySelectorAll('[data-cap]').forEach(t => t.addEventListener('input', () => { photos[Number(t.dataset.cap)].comment = t.value; }));
+    photoGrid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', async () => {
+      const idx = Number(b.dataset.rm);
+      const removed = photos[idx];
+      photos.splice(idx, 1);
+      renderPhotos();
+      if (removed?.path) deleteStorageFile(removed.path);
+    }));
+    photoGrid.querySelectorAll('[data-cap]').forEach(t => t.addEventListener('input', () => { photos[Number(t.dataset.cap)].comment = t.value; }));
   };
-  renderPhotos();
 
-  const handleFiles = async (files) => {
-    for (const file of files) {
-      try { const dataUrl = await compressImage(file); photos.push({ dataUrl, comment: '', name: file.name }); }
-      catch (err) { console.error('photo error', err); alert('Не удалось обработать ' + file.name); }
-    }
-    renderPhotos();
+  const renderDocs = () => {
+    docList.innerHTML = documents.map((d, i) => `
+      <div class="doc-edit" data-i="${i}">
+        <span class="doc-icon">${docIcon(d.name)}</span>
+        <a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-name">${e(d.name)}</a>
+        <span class="doc-meta">${fmtBytes(d.size)}</span>
+        <button type="button" class="doc-remove" data-rm="${i}" aria-label="Удалить">×</button>
+      </div>
+    `).join('');
+    docList.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', async () => {
+      const idx = Number(b.dataset.rm);
+      const removed = documents[idx];
+      documents.splice(idx, 1);
+      renderDocs();
+      if (removed?.path) deleteStorageFile(removed.path);
+    }));
   };
-  const fileInput = document.getElementById('photo-input');
-  fileInput.addEventListener('change', async (ev) => { await handleFiles(Array.from(ev.target.files || [])); fileInput.value = ''; });
-  const dropZone = document.querySelector('.photo-upload');
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--seal)'; });
-  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
-  dropZone.addEventListener('drop', async (ev) => { ev.preventDefault(); dropZone.style.borderColor = ''; const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/')); await handleFiles(files); });
+
+  renderPhotos();
+  renderDocs();
+
+  const handlePhotos = async (files) => {
+    if (!files.length) return;
+    setStatus(photoStatus, `Загрузка ${files.length} фото…`);
+    for (const file of files) {
+      try {
+        const blob = await compressImageBlob(file);
+        const { url, path } = await uploadFile('photos', file, blob);
+        photos.push({ url, path, comment: '', name: file.name });
+        renderPhotos();
+      } catch (err) {
+        console.error('photo error', err);
+        alert('Не удалось загрузить ' + file.name + ': ' + err.message);
+      }
+    }
+    setStatus(photoStatus, '');
+  };
+
+  const handleDocs = async (files) => {
+    if (!files.length) return;
+    setStatus(docStatus, `Загрузка ${files.length} документ${files.length === 1 ? 'а' : 'ов'}…`);
+    for (const file of files) {
+      try {
+        const { url, path } = await uploadFile('documents', file);
+        documents.push({ url, path, name: file.name, type: file.type || '', size: file.size });
+        renderDocs();
+      } catch (err) {
+        console.error('doc error', err);
+        alert('Не удалось загрузить ' + file.name + ': ' + err.message);
+      }
+    }
+    setStatus(docStatus, '');
+  };
+
+  const photoInput = document.getElementById('photo-input');
+  photoInput.addEventListener('change', async (ev) => { await handlePhotos(Array.from(ev.target.files || [])); photoInput.value = ''; });
+  const docInput = document.getElementById('doc-input');
+  docInput.addEventListener('change', async (ev) => { await handleDocs(Array.from(ev.target.files || [])); docInput.value = ''; });
+
+  // drag & drop on each zone
+  document.querySelectorAll('.photo-upload').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--seal)'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  });
+  document.querySelector('label[for="photo-input"]').addEventListener('drop', async (ev) => {
+    ev.preventDefault(); ev.currentTarget.style.borderColor = '';
+    const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+    await handlePhotos(files);
+  });
+  document.querySelector('label[for="doc-input"]').addEventListener('drop', async (ev) => {
+    ev.preventDefault(); ev.currentTarget.style.borderColor = '';
+    const files = Array.from(ev.dataTransfer.files || []);
+    await handleDocs(files);
+  });
 
   document.getElementById('visit-form').addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -1819,6 +2013,7 @@ function bindVisitForm(v) {
     data.prepayment = Number(data.prepayment) || 0;
     if (data.visit_date) data.visit_date = new Date(data.visit_date + 'T12:00:00').toISOString();
     data.photos = photos;
+    data.documents = documents;
     if (v.id) { await repo.put('visits', { ...v, ...data }); flash('Визит сохранён'); }
     else      { await repo.add('visits', data); flash('Визит создан'); }
     location.hash = '#/cards/' + v.card_id;
@@ -1892,11 +2087,11 @@ async function seedDemo() {
 }
 
 async function maybeAutoSeed() {
-  if (localStorage.getItem('garage_seeded')) return;
+  if (localStorage.getItem('garage_firestore_seeded')) return;
   const cards = await repo.list('cards');
-  if (cards.length > 0) { localStorage.setItem('garage_seeded', '1'); return; }
+  if (cards.length > 0) { localStorage.setItem('garage_firestore_seeded', '1'); return; }
   await seedDemo();
-  localStorage.setItem('garage_seeded', '1');
+  localStorage.setItem('garage_firestore_seeded', '1');
 }
 
 // ═══ Backup / Restore / Reseed ════════════════════════
@@ -1934,14 +2129,14 @@ document.getElementById('reseed').addEventListener('click', async (ev) => {
   if (cards.length > 0 && !confirm('Это очистит все текущие данные и загрузит примеры заново. Продолжить?')) return;
   await Promise.all(['cards','visits'].map(s => repo.clear(s)));
   await seedDemo();
-  localStorage.setItem('garage_seeded', '1');
+  localStorage.setItem('garage_firestore_seeded', '1');
   flash('Демо данные загружены');
   dispatch();
 });
 
 // ═══ Boot ═════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
-  await maybeAutoSeed();
+  try { await maybeAutoSeed(); } catch (err) { console.error('Auto-seed failed:', err); }
   if (!location.hash) location.hash = '#/'; else dispatch();
 });
 

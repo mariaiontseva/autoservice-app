@@ -1,6 +1,6 @@
 // Service Worker for offline-first PWA
 // Bump CACHE_VERSION on each release to trigger cache refresh on clients
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2-firebase';
 const CACHE = `autoservice-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -10,7 +10,9 @@ const APP_SHELL = [
   './icon.svg',
 ];
 
-const FONT_HOSTS = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;
+// Cache static assets from these CDNs (fonts + Firebase SDK).
+// Firestore data calls (firestore.googleapis.com) are NOT cached — go to network.
+const CDN_HOSTS = /^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.gstatic\.com\/firebasejs)\//;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -50,7 +52,7 @@ self.addEventListener('fetch', (event) => {
     caches.match(req).then((cached) => {
       if (cached) return cached;
       return fetch(req).then((resp) => {
-        if (resp.ok && (req.url.startsWith(self.location.origin) || FONT_HOSTS.test(req.url))) {
+        if (resp.ok && (req.url.startsWith(self.location.origin) || CDN_HOSTS.test(req.url))) {
           const clone = resp.clone();
           caches.open(CACHE).then((c) => c.put(req, clone));
         }
