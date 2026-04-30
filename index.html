@@ -823,6 +823,101 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 .page-enter { animation: pageEnter 0.42s var(--ease); }
 @keyframes pageEnter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── birthday modal ──────────────────────────────────── */
+.bday-modal {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(168,70,42,0.35), rgba(28,25,23,0.92));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 5000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: bdayFadeIn 0.45s var(--ease);
+}
+@keyframes bdayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.bday-modal.closing { animation: bdayFadeOut 0.5s var(--ease) forwards; }
+@keyframes bdayFadeOut { to { opacity: 0; } }
+
+.bday-content {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 56px 48px 48px;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  animation: bdayPop 0.55s cubic-bezier(0.16, 1.4, 0.3, 1);
+}
+@keyframes bdayPop { from { opacity: 0; transform: scale(0.85) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.bday-stage[hidden] { display: none; }
+.bday-stage { animation: stageFadeIn 0.5s var(--ease); }
+@keyframes stageFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.gift-icon {
+  font-size: 130px;
+  cursor: pointer;
+  display: inline-block;
+  user-select: none;
+  filter: drop-shadow(0 6px 12px rgba(28,25,23,0.18));
+  transition: transform 0.3s var(--ease);
+  animation: giftBob 2s ease-in-out infinite;
+}
+@keyframes giftBob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+.gift-icon:hover { animation: none; transform: scale(1.08) rotate(-4deg); }
+.gift-icon:active { transform: scale(0.95); }
+.gift-icon.bursting {
+  animation: giftBurst 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes giftBurst {
+  0%   { transform: scale(1) rotate(0); }
+  15%  { transform: scale(1.15) rotate(-12deg); }
+  30%  { transform: scale(1.2) rotate(12deg); }
+  45%  { transform: scale(1.3) rotate(-10deg); }
+  60%  { transform: scale(1.5) rotate(8deg); }
+  100% { transform: scale(2.4) rotate(0); opacity: 0; }
+}
+
+.bday-hint {
+  margin-top: 28px;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  color: var(--ink-3);
+  font-size: 1rem;
+}
+
+.bday-title {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144, 'SOFT' 60;
+  font-size: clamp(2.1rem, 5.5vw, 3rem);
+  font-weight: 700;
+  color: var(--seal);
+  margin: 8px 0 14px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.bday-sub {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  color: var(--ink-2);
+  font-size: 1.05rem;
+  margin-bottom: 32px;
+  max-width: 36ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.bday-button {
+  padding: 12px 28px;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+}
+
+@media (max-width: 720px) {
+  .bday-content { padding: 44px 28px 36px; }
+  .gift-icon { font-size: 100px; }
+  .bday-title { font-size: 2rem; }
+  .bday-sub { font-size: 0.95rem; margin-bottom: 24px; }
+}
+
 /* ── mobile ──────────────────────────────────────────── */
 @media (max-width: 720px) {
   body { font-size: 14.5px; }
@@ -1199,13 +1294,28 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 
 <main class="shell" id="app"></main>
 
+<div id="birthday-modal" class="bday-modal" hidden>
+  <div class="bday-content">
+    <div class="bday-stage stage-gift">
+      <div class="gift-icon" id="gift-icon" role="button" tabindex="0" aria-label="Открыть подарок">🎁</div>
+      <div class="bday-hint">нажми на подарок</div>
+    </div>
+    <div class="bday-stage stage-message" hidden>
+      <div class="bday-title">С Днём Рождения!</div>
+      <div class="bday-sub">Внутри — приложение для твоего автосервиса</div>
+      <button type="button" class="btn btn-primary bday-button" id="bday-open">Открыть</button>
+    </div>
+  </div>
+</div>
+
 <footer class="no-print">
   <div class="shell foot">
     <div>Локально · данные хранятся в браузере</div>
     <div>
       <a href="#" id="backup">бэкап</a> ·
       <a href="#" id="restore">восстановить</a> ·
-      <a href="#" id="reseed">демо данные</a>
+      <a href="#" id="reseed">демо</a> ·
+      <a href="#" id="clear-all">очистить</a>
       <input type="file" id="restore-input" accept="application/json" hidden>
     </div>
   </div>
@@ -1219,6 +1329,7 @@ import {
   collection, doc, getDoc, getDocs, addDoc, setDoc, deleteDoc,
   query, where
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import confetti from "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/+esm";
 const firebaseConfig = {
   apiKey: "AIzaSyBCxBYClpysc2rNrnn55kR7tR7Ut8I4gQ0",
   authDomain: "autoservice-804e1.firebaseapp.com",
@@ -2112,6 +2223,50 @@ async function seedDemo() {
   }
 }
 
+// ═══ Birthday popup (first launch) ════════════════════
+const BDAY_FLAG = 'garage_birthday_shown';
+function fireConfetti() {
+  const colors = ['#a8462a', '#5a6a23', '#1c1917', '#f4f1e8', '#d4cdb8', '#c25538'];
+  confetti({ particleCount: 140, spread: 80, startVelocity: 50, origin: { y: 0.55 }, colors, scalar: 1.1 });
+  setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0, y: 0.7 }, colors }), 200);
+  setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1, y: 0.7 }, colors }), 200);
+  setTimeout(() => confetti({ particleCount: 60, spread: 100, startVelocity: 35, origin: { y: 0.4 }, colors }), 600);
+}
+
+function maybeShowBirthday() {
+  if (localStorage.getItem(BDAY_FLAG)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const modal = document.getElementById('birthday-modal');
+    const giftEl = document.getElementById('gift-icon');
+    const stageGift = modal.querySelector('.stage-gift');
+    const stageMsg = modal.querySelector('.stage-message');
+    const openBtn = document.getElementById('bday-open');
+
+    modal.hidden = false;
+
+    const openGift = () => {
+      giftEl.classList.add('bursting');
+      setTimeout(() => {
+        stageGift.hidden = true;
+        stageMsg.hidden = false;
+        fireConfetti();
+      }, 700);
+    };
+    giftEl.addEventListener('click', openGift, { once: true });
+    giftEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGift(); } }, { once: true });
+
+    openBtn.addEventListener('click', () => {
+      modal.classList.add('closing');
+      localStorage.setItem(BDAY_FLAG, '1');
+      setTimeout(() => {
+        modal.hidden = true;
+        modal.classList.remove('closing');
+        resolve();
+      }, 500);
+    }, { once: true });
+  });
+}
+
 async function maybeAutoSeed() {
   if (localStorage.getItem('garage_firestore_seeded')) return;
   const cards = await repo.list('cards');
@@ -2160,8 +2315,19 @@ document.getElementById('reseed').addEventListener('click', async (ev) => {
   dispatch();
 });
 
+document.getElementById('clear-all').addEventListener('click', async (ev) => {
+  ev.preventDefault();
+  if (!confirm('Удалить ВСЕ карточки и визиты безвозвратно? Это нельзя отменить.')) return;
+  if (!confirm('Точно? Все данные будут стёрты.')) return;
+  await Promise.all(['cards','visits'].map(s => repo.clear(s)));
+  localStorage.setItem('garage_firestore_seeded', '1');
+  flash('База очищена');
+  setTimeout(() => location.reload(), 800);
+});
+
 // ═══ Boot ═════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
+  await maybeShowBirthday();
   try { await maybeAutoSeed(); } catch (err) { console.error('Auto-seed failed:', err); }
   if (!location.hash) location.hash = '#/'; else dispatch();
 });
