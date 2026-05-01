@@ -1,6 +1,6 @@
 // Service Worker for offline-first PWA
 // Bump CACHE_VERSION on each release to trigger cache refresh on clients
-const CACHE_VERSION = 'v7-debug';
+const CACHE_VERSION = 'v8-offline-queue';
 const CACHE = `autoservice-${CACHE_VERSION}`;
 
 const APP_SHELL = [

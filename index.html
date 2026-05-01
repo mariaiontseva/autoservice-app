@@ -531,6 +531,26 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   color: var(--seal);
   font-weight: 500;
 }
+
+/* Pending (offline-queued) photo / document */
+.photo-thumb.pending, .photo-edit.pending { position: relative; }
+.photo-thumb.pending::after, .photo-edit.pending::after {
+  content: 'ожидает сети';
+  position: absolute;
+  top: 8px; left: 8px;
+  background: rgba(28, 25, 23, 0.82);
+  color: var(--paper);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  padding: 3px 7px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.photo-thumb.pending img, .photo-edit.pending img { opacity: 0.85; }
+.doc-item.pending, .doc-edit.pending { color: var(--ink-3); border-style: dashed; }
+.doc-item.pending .doc-meta, .doc-edit.pending .doc-meta { color: var(--seal); }
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
 .photo-thumb {
   background: var(--paper);
@@ -1526,31 +1546,138 @@ async function cloudinaryUpload(fileOrBlob, resourceType = 'auto') {
 }
 
 async function uploadPhotoFile(file) {
-  // Compress first to save bandwidth (Cloudinary auto-optimizes too but we save uplink)
   const blob = await compressImageBlob(file, 1600, 0.88);
-  const result = await cloudinaryUpload(blob, 'image');
-  return {
-    url: result.secure_url,
-    publicId: result.public_id,
-    name: file.name,
-    bytes: result.bytes,
-    width: result.width,
-    height: result.height,
-  };
+  if (!navigator.onLine) return queuePhotoUpload(blob, file.name);
+  try {
+    const result = await cloudinaryUpload(blob, 'image');
+    return {
+      url: result.secure_url,
+      publicId: result.public_id,
+      name: file.name,
+      bytes: result.bytes,
+      width: result.width,
+      height: result.height,
+    };
+  } catch (err) {
+    console.warn('Cloudinary failed, queuing locally:', err);
+    return queuePhotoUpload(blob, file.name);
+  }
 }
 
 async function uploadDocumentFile(file) {
-  const result = await cloudinaryUpload(file, 'auto');
+  if (!navigator.onLine) return queueDocumentUpload(file);
+  try {
+    const result = await cloudinaryUpload(file, 'auto');
+    return {
+      url: result.secure_url,
+      publicId: result.public_id,
+      resourceType: result.resource_type,
+      format: result.format,
+      name: file.name,
+      type: file.type,
+      bytes: result.bytes,
+    };
+  } catch (err) {
+    console.warn('Cloudinary failed, queuing locally:', err);
+    return queueDocumentUpload(file);
+  }
+}
+
+// ═══ Offline upload queue (IndexedDB) ═════════════════
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+}
+function openQueueDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('autoservice_queue', 1);
+    req.onupgradeneeded = (ev) => {
+      const db = ev.target.result;
+      if (!db.objectStoreNames.contains('uploads')) {
+        db.createObjectStore('uploads', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+let _queueDB;
+async function queueDB() { if (!_queueDB) _queueDB = await openQueueDB(); return _queueDB; }
+const queue = {
+  async add(entry) { const d = await queueDB(); return new Promise((res, rej) => { const r = d.transaction('uploads','readwrite').objectStore('uploads').add(entry); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async list() { const d = await queueDB(); return new Promise((res, rej) => { const r = d.transaction('uploads').objectStore('uploads').getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async del(id)  { const d = await queueDB(); return new Promise((res, rej) => { const r = d.transaction('uploads','readwrite').objectStore('uploads').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); },
+};
+
+async function queuePhotoUpload(blob, filename) {
+  const dataUrl = await blobToDataUrl(blob);
+  const id = await queue.add({ kind: 'photo', blob, name: filename, bytes: blob.size, created_at: Date.now() });
   return {
-    url: result.secure_url,
-    publicId: result.public_id,
-    resourceType: result.resource_type,
-    format: result.format,
-    name: file.name,
-    type: file.type,
-    bytes: result.bytes,
+    pendingId: 'q' + id,
+    dataUrl,           // local preview (base64)
+    name: filename,
+    bytes: blob.size,
+    width: null, height: null,
   };
 }
+
+async function queueDocumentUpload(file) {
+  const id = await queue.add({ kind: 'document', blob: file, name: file.name, type: file.type, bytes: file.size, created_at: Date.now() });
+  return {
+    pendingId: 'q' + id,
+    name: file.name,
+    type: file.type,
+    bytes: file.size,
+  };
+}
+
+let _processingQueue = false;
+async function processPendingUploads(silent = false) {
+  if (_processingQueue) return;
+  if (!navigator.onLine) return;
+  _processingQueue = true;
+  try {
+    const items = await queue.list();
+    if (!items.length) return;
+    if (!silent) flash(`Догружаю ${items.length} файл${items.length === 1 ? '' : 'а'}…`);
+    for (const item of items) {
+      try {
+        const result = await cloudinaryUpload(item.blob, item.kind === 'document' ? 'auto' : 'image');
+        const replacement = item.kind === 'photo'
+          ? { url: result.secure_url, publicId: result.public_id, name: item.name, bytes: result.bytes, width: result.width, height: result.height, comment: '' }
+          : { url: result.secure_url, publicId: result.public_id, name: item.name, type: item.type, bytes: result.bytes };
+        await replacePendingInVisits('q' + item.id, replacement, item.kind);
+        await queue.del(item.id);
+      } catch (err) {
+        console.warn('Retry failed for queue item', item.id, err);
+        // leave it; retry on next online event
+        break;
+      }
+    }
+    if (!silent) flash('Синхронизация завершена');
+    // Refresh current view in case visit photos changed
+    if (typeof dispatch === 'function') dispatch();
+  } finally {
+    _processingQueue = false;
+  }
+}
+
+async function replacePendingInVisits(pendingId, replacement, kind) {
+  const visits = await repo.list('visits');
+  for (const v of visits) {
+    const arr = kind === 'photo' ? (v.photos || []) : (v.documents || []);
+    const idx = arr.findIndex(p => p.pendingId === pendingId);
+    if (idx >= 0) {
+      // Preserve user's comment if they set one on the placeholder
+      if (kind === 'photo' && arr[idx].comment) replacement.comment = arr[idx].comment;
+      const newArr = arr.slice();
+      newArr[idx] = replacement;
+      const updated = { ...v, [kind === 'photo' ? 'photos' : 'documents']: newArr };
+      await repo.put('visits', updated);
+    }
+  }
+}
+
+window.addEventListener('online', () => processPendingUploads());
 
 // Firestore-backed repo. Same interface as old IndexedDB version.
 const repo = {
@@ -1767,8 +1894,8 @@ function visitHTML(v, opts = {}) {
       <div class="visit-body">
         ${fields.length ? `<dl class="fields">${fields.map(([k,val])=>`<div class="field-row"><dt>${e(k)}</dt><dd>${e(val)}</dd></div>`).join('')}</dl>` : `<div class="muted" style="font-style:italic">Подробности не заполнены.</div>`}
         ${visitTotalsHTML(v)}
-        ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy"><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
-        ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span></a>`).join('')}</div></div>` : ''}
+        ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb${p.pendingId?' pending':''}" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy"><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
+        ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => d.url ? `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span></a>` : `<div class="doc-item pending"><span class="doc-icon">⏳</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">ожидает сети</span></div>`).join('')}</div></div>` : ''}
       </div>
       ${opts.actions !== false ? `<div class="visit-actions no-print"><button class="btn btn-text btn-sm" data-print-visit="${v.id}">Печать визита</button><a href="#/visits/${v.id}/edit" class="btn btn-text btn-sm">Редактировать</a><button class="btn btn-text btn-sm btn-danger" data-del-visit="${v.id}">Удалить</button></div>` : ''}
     </article>
@@ -2221,26 +2348,38 @@ function bindVisitForm(v) {
 
   const renderPhotos = () => {
     photoGrid.innerHTML = photos.map((p, i) => `
-      <div class="photo-edit" data-i="${i}">
+      <div class="photo-edit${p.pendingId?' pending':''}" data-i="${i}">
         <button type="button" class="photo-remove" data-rm="${i}" aria-label="Удалить">×</button>
         <img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy">
         <textarea class="caption-input" data-cap="${i}" placeholder="Подпись…">${e(p.comment||'')}</textarea>
       </div>
     `).join('');
-    photoGrid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { photos.splice(Number(b.dataset.rm), 1); renderPhotos(); }));
+    photoGrid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+      const idx = Number(b.dataset.rm);
+      const removed = photos[idx];
+      if (removed?.pendingId) { const qid = parseInt(removed.pendingId.slice(1), 10); queue.del(qid).catch(()=>{}); }
+      photos.splice(idx, 1);
+      renderPhotos();
+    }));
     photoGrid.querySelectorAll('[data-cap]').forEach(t => t.addEventListener('input', () => { photos[Number(t.dataset.cap)].comment = t.value; }));
   };
 
   const renderDocs = () => {
     docList.innerHTML = documents.map((d, i) => `
-      <div class="doc-edit" data-i="${i}">
-        <span class="doc-icon">${docIcon(d.name)}</span>
-        <a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-name">${e(d.name)}</a>
-        <span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span>
+      <div class="doc-edit${d.pendingId?' pending':''}" data-i="${i}">
+        <span class="doc-icon">${d.pendingId ? '⏳' : docIcon(d.name)}</span>
+        ${d.url ? `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-name">${e(d.name)}</a>` : `<span class="doc-name">${e(d.name)}</span>`}
+        <span class="doc-meta">${d.pendingId ? 'ожидает сети' : fmtBytes(d.bytes || d.size)}</span>
         <button type="button" class="doc-remove" data-rm="${i}" aria-label="Удалить">×</button>
       </div>
     `).join('');
-    docList.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { documents.splice(Number(b.dataset.rm), 1); renderDocs(); }));
+    docList.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+      const idx = Number(b.dataset.rm);
+      const removed = documents[idx];
+      if (removed?.pendingId) { const qid = parseInt(removed.pendingId.slice(1), 10); queue.del(qid).catch(()=>{}); }
+      documents.splice(idx, 1);
+      renderDocs();
+    }));
   };
 
   renderPhotos();
@@ -2494,6 +2633,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   await maybeShowBirthday();
   try { await maybeAutoSeed(); } catch (err) { console.error('Auto-seed failed:', err); }
   if (!location.hash) location.hash = '#/'; else dispatch();
+  // Try to flush any queued offline uploads after the app is up
+  setTimeout(() => processPendingUploads(true).catch(() => {}), 2500);
 });
 
 // ═══ Service Worker registration (PWA / offline) ══════
