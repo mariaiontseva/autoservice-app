@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Автосервис — установка</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    background: #f4f1e8;
+    color: #1c1917;
+    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .card {
+    background: #fbf9f1;
+    border: 1px solid #d4cdb8;
+    border-radius: 6px;
+    padding: 48px 40px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+  }
+  .logo {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 24px;
+    display: block;
+  }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 32px;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+  .lead {
+    color: #4d4a44;
+    font-size: 16px;
+    margin: 0 0 32px;
+    line-height: 1.5;
+  }
+  .btn {
+    appearance: none;
+    border: none;
+    background: #a8462a;
+    color: #fbf9f1;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 16px 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.15s ease;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover { background: #8e3a23; }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { background: #b6b1a4; cursor: default; }
+  .btn-secondary {
+    background: transparent;
+    color: #4d4a44;
+    border: 1px solid #d4cdb8;
+    margin-top: 12px;
+  }
+  .btn-secondary:hover { background: #ebe6d6; color: #1c1917; }
+  .status {
+    margin: 20px 0 0;
+    font-size: 14px;
+    color: #4d4a44;
+    min-height: 20px;
+    line-height: 1.5;
+  }
+  .ok { color: #5a6a23; font-weight: 500; }
+  .help {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px dotted #d4cdb8;
+    font-size: 13px;
+    color: #87837a;
+    line-height: 1.6;
+    text-align: left;
+  }
+  .help b { color: #4d4a44; font-weight: 600; }
+  .step { margin: 6px 0; }
+  .step-num {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    background: #ebe6d6;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #4d4a44;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img src="icon.svg" alt="" class="logo">
+  <h1>Автосервис</h1>
+  <p class="lead">Картотека клиентов автосервиса.<br>Работает на этом компьютере без интернета.</p>
+
+  <button class="btn" id="install-btn">Установить</button>
+  <button class="btn btn-secondary" id="open-btn" hidden>Открыть приложение</button>
+
+  <p class="status" id="status"></p>
+
+  <div class="help" id="help" hidden>
+    <b>Если кнопка «Установить» не сработала:</b>
+    <div class="step"><span class="step-num">1</span> Откройте меню браузера (три точки справа сверху)</div>
+    <div class="step"><span class="step-num">2</span> Нажмите «Установить «Автосервис local»»</div>
+    <div class="step"><span class="step-num">3</span> На рабочем столе появится иконка</div>
+  </div>
+</div>
+
+<script>
+  const installBtn = document.getElementById('install-btn');
+  const openBtn    = document.getElementById('open-btn');
+  const status     = document.getElementById('status');
+  const help       = document.getElementById('help');
+
+  let deferredPrompt = null;
+  let isInstalled    = false;
+
+  // Detect if already installed (running in standalone mode or via display-mode)
+  function checkInstalled() {
+    if (window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true) {
+      isInstalled = true;
+    }
+  }
+  checkInstalled();
+
+  if (isInstalled) {
+    // Already running as installed PWA — go straight to the app
+    location.replace('./');
+  }
+
+  // Register service worker — required for the install prompt to fire
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.disabled = false;
+    installBtn.textContent = 'Установить';
+    status.textContent = '';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        status.innerHTML = '<span class="ok">Установлено! Открываю…</span>';
+        setTimeout(() => location.replace('./'), 1200);
+      } else {
+        status.textContent = 'Установка отменена. Можно попробовать ещё раз.';
+      }
+      deferredPrompt = null;
+    } else {
+      // Browser didn't fire the install event — fall back to opening the app directly
+      location.replace('./');
+    }
+  });
+
+  openBtn.addEventListener('click', () => location.replace('./'));
+
+  window.addEventListener('appinstalled', () => {
+    status.innerHTML = '<span class="ok">Установлено! Иконка появится на рабочем столе.</span>';
+    installBtn.hidden = true;
+    openBtn.hidden = false;
+  });
+
+  // If after 2 seconds the install prompt isn't available, show the manual fallback
+  setTimeout(() => {
+    if (!deferredPrompt && !isInstalled) {
+      help.hidden = false;
+      openBtn.hidden = false;
+      status.textContent = 'Можно установить через меню браузера или просто открыть приложение в окне:';
+    }
+  }, 2000);
+</script>
+
+</body>
+</html>
