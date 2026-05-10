@@ -214,6 +214,7 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--rule);
 }
+.ledger thead th.right { text-align: right; }
 .ledger tbody td { padding: 14px 16px; border-bottom: 1px dashed var(--rule-soft); vertical-align: middle; }
 .ledger tbody tr:last-child td { border-bottom: none; }
 .ledger tbody tr.click { cursor: pointer; transition: background 0.15s var(--ease); }
@@ -2440,7 +2441,7 @@ route('/', async () => {
         ${recent.length === 0 ? `<div class="empty"><div class="empty-title">Записей ещё нет</div></div>` : `
           <table class="ledger">
             <thead><tr><th style="width:90px">Дата</th><th>Клиент</th><th>Машина</th><th>Гос. номер</th><th class="right">Стоимость</th><th>Статус</th></tr></thead>
-            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(formatPlate(c.plate)||'—')}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
+            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(normalizePlate(c.plate)||'—')}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
           </table>
         `}
       </div>
@@ -2462,7 +2463,7 @@ function activeBlock(title, visits, cardById, accent) {
     </div>
     <div class="sheet">
       <table class="ledger">
-        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(formatPlate(c.plate)||'—')}</td><td class="right">${v.mileage ? fmtKm(v.mileage) : ''}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
+        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(normalizePlate(c.plate)||'—')}</td><td class="right">${v.mileage ? fmtKm(v.mileage) : ''}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
       </table>
     </div>
   `;
@@ -2510,7 +2511,7 @@ route('/cards', async () => {
     out.innerHTML = `
       <table class="ledger">
         <thead><tr><th>Клиент</th><th>Телефон</th><th>Машина</th><th>Гос. номер</th><th class="right" style="width:80px">Визиты</th><th style="width:110px">Последний</th></tr></thead>
-        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(formatPlate(c.plate)||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
+        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(normalizePlate(c.plate)||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
       </table>
     `;
     bindRowClicks();
@@ -2561,7 +2562,7 @@ route('/cards/:id', async ({id}) => {
         <div class="car-meta">${lastVisit?.mileage ? `<span>пробег ${fmtKm(lastVisit.mileage)}</span><span class="dot">·</span>` : ''}${lastVisit ? `<span><span class="meta-lab">последний визит </span>${fmtDate(lastVisit.visit_date)}</span>` : '<span>визитов пока нет</span>'}</div>
         ${card.vin ? `<div class="car-meta"><span class="lab" style="text-transform:uppercase;font-size:11px;letter-spacing:0.08em;color:var(--ink-3);margin-right:6px">VIN</span><span class="mono" style="font-size:0.92rem;letter-spacing:0.04em">${e(card.vin)}</span></div>` : ''}
       </div>
-      <div class="car-plate">${e(formatPlate(card.plate) || '—')}</div>
+      <div class="car-plate">${e(normalizePlate(card.plate) || '—')}</div>
     </section>
 
     ${card.notes ? `<div class="notes-block"><span class="lab">Заметки</span>${e(card.notes)}</div>` : ''}
@@ -2618,7 +2619,7 @@ function cardForm(c) {
           <div class="input-row"><label for="f-make">Марка</label><input id="f-make" name="make" required value="${e(c.make||'')}" placeholder="Toyota"></div>
           <div class="input-row"><label for="f-model">Модель</label><input id="f-model" name="model" value="${e(c.model||'')}" placeholder="Corolla"></div>
           <div class="input-row"><label for="f-year">Год выпуска</label><input id="f-year" name="year" type="number" min="1950" max="${new Date().getFullYear()+1}" value="${e(c.year||'')}" placeholder="${new Date().getFullYear()}"></div>
-          <div class="input-row"><label for="f-plate">Гос. номер</label><input id="f-plate" name="plate" required value="${e(formatPlate(c.plate)||'')}" placeholder="A 123 BC 77" autocapitalize="characters" autocomplete="off"></div>
+          <div class="input-row"><label for="f-plate">Гос. номер</label><input id="f-plate" name="plate" required value="${e(normalizePlate(c.plate)||'')}" placeholder="A123BC77" autocapitalize="characters" autocomplete="off"></div>
           <div class="input-row"><label for="f-vin">VIN</label><input id="f-vin" name="vin" value="${e(c.vin||'')}" placeholder="JTNBE40K003456789" maxlength="17" autocapitalize="characters" autocomplete="off"></div>
         </div>
       </div>
@@ -2650,10 +2651,14 @@ function bindCardForm(c) {
   const plateInput = document.getElementById('f-plate');
   if (plateInput) {
     plateInput.style.textTransform = 'uppercase';
-    plateInput.addEventListener('blur', () => {
-      // On blur, prettify (insert spaces in standard positions if applicable)
-      const f = formatPlate(plateInput.value);
-      if (f) plateInput.value = f;
+    plateInput.addEventListener('input', () => {
+      // Live: strip spaces, uppercase
+      const cleaned = normalizePlate(plateInput.value);
+      if (cleaned !== plateInput.value) {
+        const pos = plateInput.selectionStart - (plateInput.value.length - cleaned.length);
+        plateInput.value = cleaned;
+        try { plateInput.setSelectionRange(pos, pos); } catch {}
+      }
     });
   }
   document.getElementById('card-form').addEventListener('submit', async (ev) => {
@@ -2683,7 +2688,7 @@ route('/cards/:id/visits/new', async ({id}) => {
     <section class="page-head">
       <div class="crumbs"><a href="#/cards/${id}">← ${e(card.surname || 'Карточка')}</a> · новый визит</div>
       <h1 class="h1">Новый визит</h1>
-      <p class="lede">${e(card.surname || '')} · ${e(card.make || '')} ${e(card.model || '')}${card.year?` · ${e(card.year)}`:''} · <span class="mono" style="font-size: 0.9rem">${e(formatPlate(card.plate) || '')}</span></p>
+      <p class="lede">${e(card.surname || '')} · ${e(card.make || '')} ${e(card.model || '')}${card.year?` · ${e(card.year)}`:''} · <span class="mono" style="font-size: 0.9rem">${e(normalizePlate(card.plate) || '')}</span></p>
     </section>
     ${visitForm(draft)}
   `;
