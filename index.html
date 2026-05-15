@@ -377,6 +377,32 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   display: block; margin-bottom: 4px; font-weight: 500;
 }
 
+/* ── scheduled visits ────────────────────────────────── */
+.sched-block { margin-top: 12px; padding: 16px 22px; background: var(--paper-soft); border: 1px dashed var(--rule); border-radius: 2px; }
+.sched-head { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-3); font-weight: 500; margin-bottom: 10px; }
+.sched-list { display: flex; flex-direction: column; }
+.sched-row { display: flex; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--rule-soft); }
+.sched-row:last-child { border-bottom: none; }
+.sched-when { display: flex; gap: 8px; align-items: baseline; flex: 0 0 auto; min-width: 132px; }
+.sched-date { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; color: var(--ink); }
+.sched-time { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; color: var(--seal); }
+.sched-note { flex: 1; font-size: 0.92rem; color: var(--ink-2); }
+.sched-edit, .sched-del { flex: 0 0 auto; line-height: 1; color: var(--ink-2); padding: 5px 9px; border: 1px solid var(--rule); border-radius: 2px; transition: color 0.12s, border-color 0.12s; }
+.sched-edit { font-size: 1.05rem; }
+.sched-del { font-size: 1.2rem; }
+.sched-edit:hover { color: var(--ink); border-color: var(--ink); }
+.sched-del:hover { color: var(--seal); border-color: var(--seal); }
+.sched-edit-form { width: 100%; }
+.sched-row:has(.sched-edit-form) { padding: 4px 0; }
+.sched-empty { font-size: 0.88rem; color: var(--ink-4); font-style: italic; padding: 2px 0 6px; }
+.sched-add-wrap { margin-top: 14px; }
+.sched-add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+.sched-add[hidden] { display: none; }
+.sched-add input { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: 2px; padding: 8px 10px; }
+.sched-add input[name="date"], .sched-add input[name="time"] { font-family: 'JetBrains Mono', monospace; }
+.sched-add input[name="note"] { flex: 1; min-width: 160px; }
+.sched-add input:focus { outline: none; border-color: var(--ink-2); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
+
 /* ── section head ────────────────────────────────────── */
 .section-head {
   display: flex; align-items: baseline; justify-content: space-between;
@@ -423,6 +449,12 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
 .visit-total { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
 .status-cell { display: flex; flex-direction: row-reverse; align-items: center; gap: 12px; }
 .delivered-at { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--ink-3); letter-spacing: 0.04em; white-space: nowrap; text-transform: lowercase; }
+.delivered-at.editable { cursor: pointer; border-bottom: 1px dashed transparent; transition: color 0.12s, border-color 0.12s; }
+.delivered-at.editable:hover, .delivered-at.editable:focus-visible { color: var(--ink-2); border-bottom-color: var(--rule-soft); outline: none; }
+.dt-pop-input { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: 2px; padding: 8px 10px; width: 100%; }
+.dt-pop-input:focus { outline: none; border-color: var(--ink-2); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
+.dt-pop-row { display: flex; gap: 6px; padding: 8px 6px 4px; }
+.dt-pop-row .btn { flex: 1; }
 @media (max-width: 700px) {
   .status-cell { flex-direction: column; align-items: flex-end; gap: 4px; }
 }
@@ -1438,6 +1470,9 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 }
 
 /* ── print ───────────────────────────────────────────── */
+.print-sign { display: none; }
+.print-header { display: none; }
+
 @media print {
   @page { margin: 14mm; size: A4; }
 
@@ -1450,6 +1485,20 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     print-color-adjust: economy;
   }
   body::before { display: none !important; }
+
+  /* Service name header on every printed sheet */
+  .print-header {
+    display: block;
+    text-align: left;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 15pt;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #000 !important;
+    padding-bottom: 9px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #000 !important;
+  }
 
   /* Hide UI */
   header, footer, .no-print, .visit-actions,
@@ -1518,9 +1567,8 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   .photo-thumb img { max-height: 4cm; }
   .photo-thumb .caption { font-size: 8.5pt; padding: 4px 7px; min-height: 0; line-height: 1.3; color: #333 !important; }
 
-  /* Notes */
-  .notes-block { padding: 10px 14px; font-size: 10pt; border-style: solid !important; color: #000 !important; }
-  .notes-block .lab { font-size: 7.5pt !important; color: #555 !important; }
+  /* Client-level note: never printed (screen only) */
+  .notes-block { display: none !important; }
 
   /* Works table */
   .works { margin-top: 12px; padding-top: 10px; }
@@ -1543,6 +1591,33 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   .visit-head { page-break-after: avoid; }
 
   a { color: #000 !important; text-decoration: none !important; border-bottom: none !important; }
+
+  /* Client signature line on the printed visit sheet */
+  .print-sign {
+    display: block;
+    margin: 26px 16px 4px;
+    padding-top: 16px;
+    border-top: 1px dashed #bbb !important;
+    page-break-inside: avoid;
+  }
+  .print-sign .sign-row { display: flex; gap: 32px; align-items: flex-end; }
+  .print-sign .sign-field { flex: 1; }
+  .print-sign .sign-field.sign-date { flex: 0 0 42mm; }
+  .print-sign .sign-line {
+    display: flex; align-items: flex-end; justify-content: center;
+    border-bottom: 1px solid #000; min-height: 30px; padding-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10pt; color: #000 !important;
+  }
+  .print-sign .sign-cap {
+    display: block; margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7.5pt; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #555 !important;
+  }
+  .print-sign .sign-note {
+    margin-top: 14px; font-size: 8pt; color: #777 !important;
+    font-style: italic; line-height: 1.4;
+  }
 }
 </style>
 </head>
@@ -1578,6 +1653,8 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     </nav>
   </div>
 </header>
+
+<div class="print-header" aria-hidden="true">Автосервис «Южный&nbsp;Ветер»</div>
 
 <main class="shell" id="app"></main>
 
@@ -1980,6 +2057,42 @@ const fmtMoney = (n) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 
 const fmtKm = (n) => n ? Number(n).toLocaleString('ru-RU') + ' км' : '—';
 const digits = (s) => String(s || '').replace(/\D/g, '');
 const normalizePlate = (s) => String(s || '').replace(/\s+/g, '').toUpperCase();
+// Suggested filename for browser "Save as PDF" (uses document.title)
+const printFileName = (kind, card, dateStr) => {
+  const parts = [kind];
+  if (card && card.surname) parts.push(String(card.surname).trim());
+  const plate = card ? normalizePlate(card.plate) : '';
+  if (plate) parts.push(plate);
+  if (dateStr) { const d = fmtDate(dateStr); if (d && d !== '—') parts.push(d.replace(/\./g, '-')); }
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+};
+// Local YYYY-MM-DD for today (no TZ shift)
+const todayLocal = () => { const d = new Date(); const p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+// Validate a scheduled-visit date/time. Returns error string, or null if OK.
+const validAppt = (date, time) => {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'Укажите корректную дату';
+  if (time && !/^\d{2}:\d{2}$/.test(time)) return 'Некорректное время';
+  const d = new Date(date + 'T' + (time || '00:00'));
+  if (isNaN(d)) return 'Некорректная дата или время';
+  if (date < todayLocal()) return 'Дата уже прошла';
+  return null;
+};
+const schedFieldsHTML = (a = {}) => `
+  <input type="date" name="date" required min="${todayLocal()}" value="${e(a.date || '')}" aria-label="Дата">
+  <input type="time" name="time" value="${e(a.time || '')}" aria-label="Время">
+  <input type="text" name="note" value="${e(a.note || '')}" placeholder="Заметка — например: замена масла" aria-label="Заметка">`;
+// Scheduled-visits list markup (sorted), reused for in-place repaint
+const schedListHTML = (raw) => {
+  const list = (raw || []).slice().sort((a,b) => ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
+  if (!list.length) return `<div class="sched-empty">Пока ничего не запланировано</div>`;
+  return list.map(a => `
+    <div class="sched-row" data-ap="${e(a.id)}">
+      <span class="sched-when"><span class="sched-date">${e(fmtDate(a.date))}</span>${a.time ? `<span class="sched-time">${e(a.time)}</span>` : ''}</span>
+      <span class="sched-note">${e(a.note || '')}</span>
+      <button type="button" class="sched-edit" data-ap-edit="${e(a.id)}" title="Изменить" aria-label="Изменить">✎</button>
+      <button type="button" class="sched-del" data-ap-del="${e(a.id)}" title="Удалить" aria-label="Удалить">×</button>
+    </div>`).join('');
+};
 function formatPlate(s) {
   if (!s) return '';
   const n = normalizePlate(s);
@@ -2095,6 +2208,7 @@ async function dispatch() {
         await r.handler(params);
         animatePageEnter();
         bindStatusStamps();
+        bindDeliveryEditors();
       } catch (err) {
         app.innerHTML = `<div class="empty"><div class="empty-title">Сбой: ${e(err.message)}</div></div>`;
         console.error(err);
@@ -2243,6 +2357,7 @@ async function loadVisitSuggestionBase() {
 function visitHTML(v, opts = {}) {
   const dp = fmtDateParts(v.visit_date);
   const dateBlock = dp ? `<div class="visit-date">${dp.day}.${dp.mon}.<span class="y">${dp.year}</span></div>` : `<div class="visit-date muted">—</div>`;
+  const signDate = (() => { const s = v.delivered_at || v.visit_date; if (!s) return ''; const f = fmtDate(s); return f === '—' ? '' : f; })();
   const works = worksOf(v);
   const parts = partsOf(v);
   const legacyParts = legacyPartsText(v);
@@ -2263,7 +2378,7 @@ function visitHTML(v, opts = {}) {
       <div class="visit-head">
         ${dateBlock}
         ${v.mileage ? `<div class="visit-mileage">${fmtKm(v.mileage)}</div>` : '<div></div>'}
-        <div class="status-cell">${stamp(v.status, v.id)}${v.status === 'delivered' && v.delivered_at ? `<div class="delivered-at">выдан ${fmtDateTime(v.delivered_at)}</div>` : ''}</div>
+        <div class="status-cell">${stamp(v.status, v.id)}${v.status === 'delivered' && v.delivered_at ? `<div class="delivered-at editable" data-vid="${v.id}" role="button" tabindex="0" title="Изменить дату выдачи">выдан ${fmtDateTime(v.delivered_at)}</div>` : ''}</div>
         ${showTotal ? `<div class="visit-total">${fmtMoney(due)}</div>` : '<div></div>'}
       </div>
       <div class="visit-body">
@@ -2274,17 +2389,34 @@ function visitHTML(v, opts = {}) {
         ${photos.length ? `<div class="photos"><div class="photos-head">Фото и видео · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>{const isVideo=mediaKind(p)==='video';const src=p.url||p.dataUrl||'';return `<figure class="photo-thumb${p.pendingId?' pending':''}${isVideo?' is-video':''}" data-vid="${v.id}" data-pi="${i}">${isVideo?`<video src="${e(src)}" preload="metadata" muted playsinline></video><span class="play-overlay" aria-hidden="true">▶</span>`:`<img src="${e(src)}" alt="" loading="lazy">`}<figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`;}).join('')}</div></div>` : ''}
         ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => d.url ? `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span></a>` : `<div class="doc-item pending"><span class="doc-icon">⏳</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">ожидает сети</span></div>`).join('')}</div></div>` : ''}
       </div>
+      <div class="print-sign" aria-hidden="true">
+        <div class="sign-row">
+          <div class="sign-field"><span class="sign-line"></span><span class="sign-cap">Подпись клиента</span></div>
+          <div class="sign-field sign-date"><span class="sign-line">${signDate}</span><span class="sign-cap">Дата</span></div>
+        </div>
+        <div class="sign-note">С объёмом выполненных работ и стоимостью ознакомлен, претензий не имею.</div>
+      </div>
       ${opts.actions !== false ? `<div class="visit-actions no-print"><button class="btn btn-text btn-sm" data-print-visit="${v.id}">Печать визита</button><a href="#/visits/${v.id}/edit" class="btn btn-text btn-sm">Редактировать</a><button class="btn btn-text btn-sm btn-danger" data-del-visit="${v.id}">Удалить</button></div>` : ''}
     </article>
   `;
 }
 function bindVisitActions(reload) {
   document.querySelectorAll('[data-print-visit]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const id = btn.dataset.printVisit;
       document.querySelectorAll('.visit').forEach(el => el.classList.toggle('print-target', el.dataset.vid === id));
       document.body.classList.add('print-visit-only');
-      const cleanup = () => { document.body.classList.remove('print-visit-only'); window.removeEventListener('afterprint', cleanup); };
+      const prevTitle = document.title;
+      try {
+        const v = await repo.get('visits', id);
+        const c = v ? await repo.get('cards', v.card_id) : null;
+        document.title = printFileName('Визит', c, v && v.visit_date);
+      } catch (_) {}
+      const cleanup = () => {
+        document.body.classList.remove('print-visit-only');
+        document.title = prevTitle;
+        window.removeEventListener('afterprint', cleanup);
+      };
       window.addEventListener('afterprint', cleanup);
       window.print();
     });
@@ -2339,13 +2471,18 @@ function updateStampUI(vid, newStatus, deliveredAt) {
         if (existing) existing.textContent = text;
         else {
           const d = document.createElement('div');
-          d.className = 'delivered-at';
+          d.className = 'delivered-at editable';
+          d.dataset.vid = vid;
+          d.setAttribute('role', 'button');
+          d.setAttribute('tabindex', '0');
+          d.title = 'Изменить дату выдачи';
           d.textContent = text;
           cell.appendChild(d);
         }
       } else if (existing) existing.remove();
     }
   });
+  bindDeliveryEditors();
 }
 function bindStatusStamps() {
   document.querySelectorAll('.stamp[data-vid]').forEach(s => {
@@ -2394,6 +2531,68 @@ function openStatusPopover(anchor) {
       // Patch the DOM in place — no full route re-render
       updateStampUI(vid, newStatus, deliveredAt);
     });
+  });
+  setTimeout(() => {
+    const closer = (e) => { if (!pop.contains(e.target)) { clearPopover(); document.removeEventListener('click', closer); } };
+    document.addEventListener('click', closer);
+  }, 50);
+}
+
+// ISO string → value for <input type="datetime-local"> (local time, no TZ shift)
+const isoToLocalInput = (iso) => {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+function bindDeliveryEditors() {
+  document.querySelectorAll('.delivered-at.editable[data-vid]').forEach(el => {
+    if (el.dataset.bound) return;
+    el.dataset.bound = '1';
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); openDeliveryEditor(el); });
+    el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openDeliveryEditor(el); } });
+  });
+}
+
+async function openDeliveryEditor(anchor) {
+  clearPopover();
+  const vid = anchor.dataset.vid;
+  const v = await repo.get('visits', vid);
+  if (!v) return;
+  const pop = document.createElement('div');
+  pop.className = 'status-popover';
+  pop.style.minWidth = '240px';
+  pop.innerHTML = `
+    <div class="popover-title">Дата выдачи</div>
+    <input type="datetime-local" class="dt-pop-input" value="${isoToLocalInput(v.delivered_at || new Date().toISOString())}">
+    <div class="dt-pop-row">
+      <button type="button" class="btn btn-text btn-sm" data-dt-cancel>Отмена</button>
+      <button type="button" class="btn btn-primary btn-sm" data-dt-save>Сохранить</button>
+    </div>
+  `;
+  document.body.appendChild(pop);
+  activePopover = pop;
+  const rect = anchor.getBoundingClientRect();
+  const popW = pop.offsetWidth;
+  let left = rect.left + window.scrollX;
+  if (left + popW > window.innerWidth - 12) left = window.innerWidth - popW - 12;
+  if (left < 12) left = 12;
+  pop.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  pop.style.left = left + 'px';
+  const input = pop.querySelector('.dt-pop-input');
+  input.focus();
+  pop.querySelector('[data-dt-cancel]').addEventListener('click', (ev) => { ev.stopPropagation(); clearPopover(); });
+  pop.querySelector('[data-dt-save]').addEventListener('click', async (ev) => {
+    ev.stopPropagation();
+    if (!input.value) { clearPopover(); return; }
+    const d = new Date(input.value);
+    if (isNaN(d)) { flash('Некорректная дата'); return; }
+    v.delivered_at = d.toISOString();
+    await repo.put('visits', v);
+    clearPopover();
+    updateStampUI(vid, v.status, v.delivered_at);
+    flash('Дата выдачи обновлена');
   });
   setTimeout(() => {
     const closer = (e) => { if (!pop.contains(e.target)) { clearPopover(); document.removeEventListener('click', closer); } };
@@ -2538,6 +2737,7 @@ route('/cards/:id', async ({id}) => {
   const visits = (await repo.byIdx('visits', 'card_id', id)).sort((a,b) => (b.visit_date||'').localeCompare(a.visit_date||''));
   const lastVisit = visits[0];
   const since = card.created_at ? new Date(card.created_at).toLocaleDateString('ru-RU', { month:'long', year:'numeric' }) : '';
+  document.title = printFileName('Карточка', card);
 
   app.innerHTML = `
     <section class="page-head no-print"><div class="crumbs"><a href="#/cards">← Картотека</a></div></section>
@@ -2565,6 +2765,19 @@ route('/cards/:id', async ({id}) => {
       <div class="car-plate">${e(normalizePlate(card.plate) || '—')}</div>
     </section>
 
+    <section class="sched-block no-print">
+      <div class="sched-head">Запланированные визиты</div>
+      <div class="sched-list" id="sched-list">${schedListHTML(card.appointments)}</div>
+      <div class="sched-add-wrap">
+        <button type="button" class="btn btn-ghost btn-sm" id="sched-toggle">+ Добавить</button>
+        <form class="sched-add" id="sched-add" autocomplete="off" hidden>
+          ${schedFieldsHTML()}
+          <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+          <button type="button" class="btn btn-text btn-sm" id="sched-cancel">Отмена</button>
+        </form>
+      </div>
+    </section>
+
     ${card.notes ? `<div class="notes-block"><span class="lab">Заметки</span>${e(card.notes)}</div>` : ''}
 
     <div class="section-head no-print">
@@ -2584,6 +2797,84 @@ route('/cards/:id', async ({id}) => {
     flash('Карточка удалена');
     location.hash = '#/cards';
   });
+  const schedListEl = document.getElementById('sched-list');
+  const schedForm   = document.getElementById('sched-add');
+  const schedToggle = document.getElementById('sched-toggle');
+  const schedCancel = document.getElementById('sched-cancel');
+  function startEdit(apId) {
+    const a = (card.appointments || []).find(x => x.id === apId);
+    const row = schedListEl && schedListEl.querySelector(`.sched-row[data-ap="${apId}"]`);
+    if (!a || !row) return;
+    row.innerHTML = `<form class="sched-add sched-edit-form" autocomplete="off">
+        ${schedFieldsHTML(a)}
+        <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+        <button type="button" class="btn btn-text btn-sm" data-edit-cancel>Отмена</button>
+      </form>`;
+    const f = row.querySelector('form');
+    f.querySelector('input[name="date"]').focus();
+    f.querySelector('[data-edit-cancel]').addEventListener('click', () => paintSched());
+    f.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(f);
+      const date = (fd.get('date') || '').trim();
+      const time = (fd.get('time') || '').trim();
+      const err = validAppt(date, time);
+      if (err) { flash(err); return; }
+      const list = card.appointments || [];
+      const idx = list.findIndex(x => x.id === apId);
+      if (idx >= 0) list[idx] = { ...list[idx], date, time, note: (fd.get('note') || '').trim() };
+      card.appointments = list;
+      await repo.put('cards', card);
+      paintSched();
+      flash('Визит обновлён');
+    });
+  }
+  function paintSched() {
+    if (!schedListEl) return;
+    schedListEl.innerHTML = schedListHTML(card.appointments);
+    schedListEl.querySelectorAll('[data-ap-del]').forEach(b => {
+      b.addEventListener('click', async () => {
+        card.appointments = (card.appointments || []).filter(a => a.id !== b.dataset.apDel);
+        await repo.put('cards', card);
+        paintSched();
+        flash('Запланированный визит удалён');
+      });
+    });
+    schedListEl.querySelectorAll('[data-ap-edit]').forEach(b => {
+      b.addEventListener('click', () => startEdit(b.dataset.apEdit));
+    });
+  }
+  function showSchedForm(show) {
+    if (!schedForm || !schedToggle) return;
+    schedForm.hidden = !show;
+    schedToggle.hidden = show;
+    if (show) { const di = schedForm.querySelector('input[name="date"]'); if (di) di.focus(); }
+  }
+  if (schedToggle) schedToggle.addEventListener('click', () => showSchedForm(true));
+  if (schedCancel) schedCancel.addEventListener('click', () => { schedForm.reset(); showSchedForm(false); });
+  if (schedForm) {
+    schedForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(schedForm);
+      const date = (fd.get('date') || '').trim();
+      const time = (fd.get('time') || '').trim();
+      const err = validAppt(date, time);
+      if (err) { flash(err); return; }
+      const entry = {
+        id: 'ap' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        date,
+        time,
+        note: (fd.get('note') || '').trim(),
+      };
+      card.appointments = [...(card.appointments || []), entry];
+      await repo.put('cards', card);
+      schedForm.reset();
+      showSchedForm(false);
+      paintSched();
+      flash('Визит запланирован');
+    });
+  }
+  paintSched();
   bindVisitActions(() => dispatch());
   staggerChildren('.visit', { delay: 220, step: 70, duration: 420 });
 });
