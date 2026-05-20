@@ -1583,7 +1583,17 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   body.print-visit-only .hero-actions,
   body.print-visit-only .visit-actions { display: none !important; }
   body.print-visit-only .visit { display: none !important; }
-  body.print-visit-only .visit.print-target { display: block !important; page-break-before: avoid; }
+  body.print-visit-only .visit.print-target {
+    display: block !important;
+    page-break-before: avoid;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  body.print-visit-only .visit.print-target .visit-body {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  body.print-visit-only .car-block { page-break-after: auto !important; }
   body.print-visit-only .section-head { display: none !important; }
 
   /* Page-break safety */
