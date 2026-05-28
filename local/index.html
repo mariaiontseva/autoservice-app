@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Автосервис · Картотека (локально)</title>
+<title>Автосервис · Картотека</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8462a">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -210,6 +211,7 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--rule);
 }
+.ledger thead th.right { text-align: right; }
 .ledger tbody td { padding: 14px 16px; border-bottom: 1px dashed var(--rule-soft); vertical-align: middle; }
 .ledger tbody tr:last-child td { border-bottom: none; }
 .ledger tbody tr.click { cursor: pointer; transition: background 0.15s var(--ease); }
@@ -333,7 +335,7 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   letter-spacing: -0.012em;
   line-height: 1.1;
 }
-.car-name .model { color: var(--ink-2); font-weight: 400; font-style: italic; }
+.car-name .model { color: var(--ink-2); font-weight: 400; }
 .car-meta { margin-top: 4px; font-size: 0.85rem; color: var(--ink-3); display: flex; gap: 10px; flex-wrap: wrap; }
 .car-meta .dot { color: var(--ink-4); }
 .car-plate {
@@ -371,6 +373,32 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   color: var(--ink-3);
   display: block; margin-bottom: 4px; font-weight: 500;
 }
+
+/* ── scheduled visits ────────────────────────────────── */
+.sched-block { margin-top: 12px; padding: 16px 22px; background: var(--paper-soft); border: 1px dashed var(--rule); border-radius: 2px; }
+.sched-head { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-3); font-weight: 500; margin-bottom: 10px; }
+.sched-list { display: flex; flex-direction: column; }
+.sched-row { display: flex; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--rule-soft); }
+.sched-row:last-child { border-bottom: none; }
+.sched-when { display: flex; gap: 8px; align-items: baseline; flex: 0 0 auto; min-width: 132px; }
+.sched-date { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; color: var(--ink); }
+.sched-time { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; color: var(--seal); }
+.sched-note { flex: 1; font-size: 0.92rem; color: var(--ink-2); }
+.sched-edit, .sched-del { flex: 0 0 auto; line-height: 1; color: var(--ink-2); padding: 5px 9px; border: 1px solid var(--rule); border-radius: 2px; transition: color 0.12s, border-color 0.12s; }
+.sched-edit { font-size: 1.05rem; }
+.sched-del { font-size: 1.2rem; }
+.sched-edit:hover { color: var(--ink); border-color: var(--ink); }
+.sched-del:hover { color: var(--seal); border-color: var(--seal); }
+.sched-edit-form { width: 100%; }
+.sched-row:has(.sched-edit-form) { padding: 4px 0; }
+.sched-empty { font-size: 0.88rem; color: var(--ink-4); font-style: italic; padding: 2px 0 6px; }
+.sched-add-wrap { margin-top: 14px; }
+.sched-add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+.sched-add[hidden] { display: none; }
+.sched-add input { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: 2px; padding: 8px 10px; }
+.sched-add input[name="date"], .sched-add input[name="time"] { font-family: 'JetBrains Mono', monospace; }
+.sched-add input[name="note"] { flex: 1; min-width: 160px; }
+.sched-add input:focus { outline: none; border-color: var(--ink-2); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
 
 /* ── section head ────────────────────────────────────── */
 .section-head {
@@ -416,6 +444,17 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   letter-spacing: 0.02em;
 }
 .visit-total { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.status-cell { display: flex; flex-direction: row-reverse; align-items: center; gap: 12px; }
+.delivered-at { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--ink-3); letter-spacing: 0.04em; white-space: nowrap; text-transform: lowercase; }
+.delivered-at.editable { cursor: pointer; border-bottom: 1px dashed transparent; transition: color 0.12s, border-color 0.12s; }
+.delivered-at.editable:hover, .delivered-at.editable:focus-visible { color: var(--ink-2); border-bottom-color: var(--rule-soft); outline: none; }
+.dt-pop-input { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: 2px; padding: 8px 10px; width: 100%; }
+.dt-pop-input:focus { outline: none; border-color: var(--ink-2); box-shadow: 0 0 0 4px rgba(28,26,23,0.04); }
+.dt-pop-row { display: flex; gap: 6px; padding: 8px 6px 4px; }
+.dt-pop-row .btn { flex: 1; }
+@media (max-width: 700px) {
+  .status-cell { flex-direction: column; align-items: flex-end; gap: 4px; }
+}
 
 .visit-body { padding: 22px 26px 24px; }
 
@@ -440,6 +479,164 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   padding-top: 2px;
 }
 .field-row dd { margin: 0; font-size: 0.98rem; line-height: 1.6; white-space: pre-wrap; }
+
+/* Works table — visit display */
+.works { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--rule-soft); }
+.works-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+.works-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.96rem;
+}
+.works-table thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  font-weight: 500;
+  text-align: left;
+  padding: 0 10px 8px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.works-table thead th.right { text-align: right; }
+.works-table tbody td {
+  padding: 12px 10px;
+  border-bottom: 1px dashed var(--rule-soft);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.works-table tbody tr:last-child td { border-bottom: none; }
+.works-table td.work-type { width: auto; }
+.works-table td.work-mech { width: 160px; color: var(--ink-2); }
+.works-table td.work-cost { width: 130px; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; white-space: nowrap; }
+.parts-table td.part-name { width: auto; }
+.parts-table td.part-cost { width: 130px; text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; white-space: nowrap; }
+
+/* Works editor — visit form */
+.works-edit { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.works-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 130px 32px;
+  gap: 10px;
+  align-items: center;
+}
+.parts-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 130px 32px;
+  gap: 10px;
+  align-items: center;
+}
+.works-edit-row input {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-input);
+  color: var(--ink);
+  width: 100%;
+  box-sizing: border-box;
+}
+.works-edit-row input:focus { outline: none; border-color: var(--ink-2); background: #fff; }
+.works-edit-row input.work-cost-input { text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
+.works-edit-row .work-remove {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 32px; height: 32px;
+  border-radius: 3px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.works-edit-row .work-remove:hover { color: var(--seal); border-color: var(--rule); background: var(--paper-soft); }
+.works-edit-empty {
+  padding: 14px 16px;
+  border: 1px dashed var(--rule);
+  border-radius: 3px;
+  color: var(--ink-3);
+  font-style: italic;
+  font-size: 0.92rem;
+  text-align: center;
+}
+.works-add-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px dashed var(--rule);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.works-add-btn:hover { border-color: var(--ink-2); color: var(--ink); background: var(--paper-soft); }
+.works-edit-total {
+  display: flex; justify-content: flex-end; align-items: baseline; gap: 14px;
+  margin-top: 6px; padding-top: 12px;
+  border-top: 1px solid var(--rule-soft);
+  font-family: 'JetBrains Mono', monospace;
+}
+.works-edit-total .lab { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3); }
+.works-edit-total .val { font-size: 1.05rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Custom autocomplete dropdown — paper aesthetic */
+.suggest-dropdown {
+  position: fixed;
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(28, 25, 23, 0.10);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 200;
+  font: inherit;
+  font-size: 0.94rem;
+  color: var(--ink);
+}
+.suggest-dropdown[hidden] { display: none !important; }
+.suggest-item {
+  padding: 9px 14px;
+  cursor: pointer;
+  border-bottom: 1px dotted var(--rule-soft);
+  line-height: 1.35;
+}
+.suggest-item:last-child { border-bottom: none; }
+.suggest-item:hover,
+.suggest-item.is-active { background: var(--paper-deep); }
+.suggest-item .match { color: var(--seal); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .works-table thead { display: none; }
+  .works-table, .works-table tbody, .works-table tr, .works-table td { display: block; width: 100%; }
+  .works-table tbody tr { padding: 12px 0; border-bottom: 1px dashed var(--rule-soft); }
+  .works-table tbody tr:last-child { border-bottom: none; }
+  .works-table tbody td { padding: 2px 0; border: none; }
+  .works-table td.work-type, .parts-table td.part-name { font-weight: 500; }
+  .works-table td.work-mech::before { content: 'Мастер: '; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-right: 4px; }
+  .works-table td.work-cost, .parts-table td.part-cost { text-align: left; font-size: 0.96rem; padding-top: 6px; }
+  .works-edit-row { grid-template-columns: 1fr 32px; grid-template-areas: "type rm" "mech mech" "cost cost"; gap: 8px; padding: 14px; border: 1px dashed var(--rule); border-radius: 3px; }
+  .works-edit-row input.work-type-input { grid-area: type; }
+  .works-edit-row input.work-mech-input { grid-area: mech; }
+  .works-edit-row input.work-cost-input { grid-area: cost; text-align: left; }
+  .works-edit-row .work-remove { grid-area: rm; }
+  .parts-edit-row { grid-template-columns: 1fr 32px; grid-template-areas: "name rm" "cost cost"; gap: 8px; padding: 14px; border: 1px dashed var(--rule); border-radius: 3px; }
+  .parts-edit-row input.part-name-input { grid-area: name; }
+  .parts-edit-row input.part-cost-input { grid-area: cost; text-align: left; }
+  .parts-edit-row .work-remove { grid-area: rm; }
+}
 
 .totals {
   margin-top: 20px;
@@ -557,7 +754,24 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   transition: border-color 0.18s var(--ease);
 }
 .photo-thumb:hover { border-color: var(--ink-3); }
-.photo-thumb img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.photo-thumb img,
+.photo-thumb video { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #000; }
+.photo-thumb.is-video { position: relative; }
+.photo-thumb .play-overlay {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  pointer-events: none;
+  padding-left: 3px;
+  transition: background 0.2s;
+}
+.photo-thumb.is-video:hover .play-overlay { background: rgba(0,0,0,0.75); }
 .photo-thumb .caption {
   font-family: 'Fraunces', serif;
   font-variation-settings: 'opsz' 9;
@@ -581,7 +795,8 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
   animation: lbIn 0.25s var(--ease);
 }
 @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
-.lightbox img { max-width: 100%; max-height: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lightbox img,
+.lightbox video { max-width: 100%; max-height: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
 .lightbox .lb-cap {
   position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
   background: var(--paper); padding: 10px 18px;
@@ -722,7 +937,8 @@ nav.head-nav { display: flex; align-items: center; gap: 4px; }
 .photo-upload .pu-hint { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-3); margin-top: 6px; }
 .photo-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
 .photo-edit { background: var(--paper); border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; position: relative; }
-.photo-edit img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.photo-edit img,
+.photo-edit video { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #000; }
 .photo-edit .caption-input {
   width: 100%; border: none !important; border-top: 1px solid var(--rule-soft) !important;
   padding: 8px 11px !important;
@@ -1251,6 +1467,9 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 }
 
 /* ── print ───────────────────────────────────────────── */
+.print-sign { display: none; }
+.print-header { display: none; }
+
 @media print {
   @page { margin: 14mm; size: A4; }
 
@@ -1263,6 +1482,20 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     print-color-adjust: economy;
   }
   body::before { display: none !important; }
+
+  /* Service name header on every printed sheet */
+  .print-header {
+    display: block;
+    text-align: left;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 15pt;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #000 !important;
+    padding-bottom: 9px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #000 !important;
+  }
 
   /* Hide UI */
   header, footer, .no-print, .visit-actions,
@@ -1290,8 +1523,12 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   /* Tighter typography */
   .page-head { padding: 0; }
   .hero { padding: 0 0 14px; }
-  .hero-meta { font-size: 8pt; margin-bottom: 8px; color: #444 !important; }
-  .hero-meta .num-badge { color: #000 !important; }
+  /* Hide "С АПРЕЛЬ 2026 · 3 ВИЗИТА" line from print */
+  .hero-meta { display: none !important; }
+  /* Hide "пробег ... · последний визит ..." line from print */
+  .car-meta { display: none !important; }
+  /* Hide photos and documents blocks from print */
+  .photos, .docs { display: none !important; }
   .hero-name { font-size: 26pt !important; line-height: 1.02; }
   .hero-given { font-size: 11pt !important; margin-top: 4px; }
   .hero-phone { font-size: 11pt !important; margin-top: 8px; color: #000 !important; }
@@ -1327,15 +1564,33 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   .photo-thumb img { max-height: 4cm; }
   .photo-thumb .caption { font-size: 8.5pt; padding: 4px 7px; min-height: 0; line-height: 1.3; color: #333 !important; }
 
-  /* Notes */
-  .notes-block { padding: 10px 14px; font-size: 10pt; border-style: solid !important; color: #000 !important; }
-  .notes-block .lab { font-size: 7.5pt !important; color: #555 !important; }
+  /* Client-level note: never printed (screen only) */
+  .notes-block { display: none !important; }
+
+  /* Works table */
+  .works { margin-top: 12px; padding-top: 10px; }
+  .works-head { font-size: 7.5pt !important; margin-bottom: 6px; color: #555 !important; }
+  .works-table { font-size: 9.5pt; }
+  .works-table thead th { font-size: 7pt; padding: 0 6px 4px; color: #555 !important; border-bottom-color: #999 !important; }
+  .works-table tbody td { padding: 6px; border-bottom-color: #ddd !important; color: #000 !important; }
+  .works-table td.work-mech { color: #444 !important; width: 25mm; }
+  .works-table td.work-cost { width: 28mm; font-size: 9pt; }
 
   /* Single visit print mode */
   body.print-visit-only .hero-actions,
   body.print-visit-only .visit-actions { display: none !important; }
   body.print-visit-only .visit { display: none !important; }
-  body.print-visit-only .visit.print-target { display: block !important; page-break-before: avoid; }
+  body.print-visit-only .visit.print-target {
+    display: block !important;
+    page-break-before: avoid;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  body.print-visit-only .visit.print-target .visit-body {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  body.print-visit-only .car-block { page-break-after: auto !important; }
   body.print-visit-only .section-head { display: none !important; }
 
   /* Page-break safety */
@@ -1343,6 +1598,33 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
   .visit-head { page-break-after: avoid; }
 
   a { color: #000 !important; text-decoration: none !important; border-bottom: none !important; }
+
+  /* Client signature line on the printed visit sheet */
+  .print-sign {
+    display: block;
+    margin: 26px 16px 4px;
+    padding-top: 16px;
+    border-top: 1px dashed #bbb !important;
+    page-break-inside: avoid;
+  }
+  .print-sign .sign-row { display: flex; gap: 32px; align-items: flex-end; }
+  .print-sign .sign-field { flex: 1; }
+  .print-sign .sign-field.sign-date { flex: 0 0 42mm; }
+  .print-sign .sign-line {
+    display: flex; align-items: flex-end; justify-content: center;
+    border-bottom: 1px solid #000; min-height: 30px; padding-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10pt; color: #000 !important;
+  }
+  .print-sign .sign-cap {
+    display: block; margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7.5pt; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #555 !important;
+  }
+  .print-sign .sign-note {
+    margin-top: 14px; font-size: 8pt; color: #777 !important;
+    font-style: italic; line-height: 1.4;
+  }
 }
 </style>
 </head>
@@ -1378,6 +1660,8 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
     </nav>
   </div>
 </header>
+
+<div class="print-header" aria-hidden="true">Автосервис «Южный&nbsp;Ветер»</div>
 
 <main class="shell" id="app"></main>
 
@@ -1489,7 +1773,7 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 
 <footer class="no-print">
   <div class="shell foot">
-    <div>Локальная база · только этот компьютер</div>
+    <div>Облачная база · работает офлайн</div>
     <div>
       <a href="#" id="backup">бэкап</a> ·
       <a href="#" id="restore">восстановить</a> ·
@@ -1500,9 +1784,10 @@ footer { margin-top: 80px; padding: 32px 0 40px; border-top: 1px solid var(--rul
 </footer>
 
 <script type="module">
-// ═══ LOCAL-ONLY VERSION ═══════════════════════════════
-// All data + photos + documents live in IndexedDB on this device.
-// No cloud, no network calls. Backup via JSON export on the bottom of the page.
+// ═══ LOCAL-ONLY VERSION (no Firebase, no Cloudinary) ══
+// All data + photos + videos + documents live in IndexedDB on this device.
+// No network calls. Backup via JSON export (bottom of page) embeds every blob
+// as base64 so a single file restores the whole installation on another machine.
 import confetti from "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/+esm";
 
 // ═══ IndexedDB store ══════════════════════════════════
@@ -1534,7 +1819,10 @@ function txReq(storeName, mode, fn) {
   }));
 }
 
-// ═══ Blob storage (photos + documents) ════════════════
+// ═══ Blob storage (photos + videos + documents) ═══════
+// In offline mode every media file lives as a Blob in the `blobs` store.
+// Visit docs only reference items by `blobId`; we resolve to a transient
+// `blob:` URL on each load via URL.createObjectURL, cached per id.
 const _urlCache = new Map();
 
 async function saveBlob(blob, meta = {}) {
@@ -1547,7 +1835,7 @@ async function getBlobRec(id) {
 
 async function delBlob(id) {
   if (_urlCache.has(id)) { URL.revokeObjectURL(_urlCache.get(id)); _urlCache.delete(id); }
-  return txReq('blobs', 'readwrite', s => s.delete(Number(id)));
+  return txReq('blobs', 'readwrite', s => s.delete(Number(id))).catch(() => {});
 }
 
 async function blobUrl(blobId) {
@@ -1560,13 +1848,45 @@ async function blobUrl(blobId) {
   return url;
 }
 
-// Used only for compressing images (already imported via compressImageBlob below)
-async function uploadPhotoFile(file) {
-  const blob = await compressImageBlob(file, 1600, 0.88);
-  const blobId = await saveBlob(blob, { kind: 'photo', name: file.name, bytes: blob.size, type: blob.type });
+// Returns 'image' or 'video' based on stored item or current file
+function mediaKind(item) {
+  if (!item) return 'image';
+  if (item.kind === 'video' || item.kind === 'image') return item.kind;
+  const t = item.type || '';
+  if (String(t).startsWith('video/')) return 'video';
+  return 'image';
+}
+
+// Local storage has plenty of room — 200 MB lets short site visit clips fit.
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+
+async function uploadVideoFile(file) {
+  if (file.size > MAX_VIDEO_BYTES) {
+    throw new Error(`Видео слишком большое (${(file.size/1024/1024).toFixed(1)} MB). Лимит ${MAX_VIDEO_BYTES/1024/1024} MB.`);
+  }
+  const blobId = await saveBlob(file, { kind: 'video', name: file.name, type: file.type, bytes: file.size });
   const url = await blobUrl(blobId);
   return {
     blobId,
+    kind: 'video',
+    url,
+    name: file.name,
+    type: file.type,
+    bytes: file.size,
+    width: null,
+    height: null,
+    duration: null,
+  };
+}
+
+async function uploadPhotoFile(file) {
+  if (file.type && file.type.startsWith('video/')) return uploadVideoFile(file);
+  const blob = await compressImageBlob(file, 1600, 0.88);
+  const blobId = await saveBlob(blob, { kind: 'image', name: file.name, type: blob.type, bytes: blob.size });
+  const url = await blobUrl(blobId);
+  return {
+    blobId,
+    kind: 'image',
     url,
     name: file.name,
     bytes: blob.size,
@@ -1576,7 +1896,7 @@ async function uploadPhotoFile(file) {
 }
 
 async function uploadDocumentFile(file) {
-  const blobId = await saveBlob(file, { kind: 'document', name: file.name, bytes: file.size, type: file.type });
+  const blobId = await saveBlob(file, { kind: 'document', name: file.name, type: file.type, bytes: file.size });
   const url = await blobUrl(blobId);
   return {
     blobId,
@@ -1587,10 +1907,13 @@ async function uploadDocumentFile(file) {
   };
 }
 
-// Called on online event in the cloud version. Here we have nothing to flush.
+// Stubs so cloud-version call sites (remove-pending branches, boot flush,
+// 'online' event handler) compile without modification. In offline mode
+// items never have a pendingId, so queue.del is never reached in practice.
+const queue = { del: async () => {} };
 async function processPendingUploads() { /* no-op in local mode */ }
 
-// ═══ Repo (IndexedDB-backed, same interface as cloud version) ═════
+// ═══ Repo (IndexedDB-backed, same interface as cloud) ═
 function _genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
@@ -1654,13 +1977,13 @@ const repo = {
     return obj.id;
   },
   async del(name, id) {
-    // If deleting a visit, also drop its blob entries
+    // If deleting a visit, also free its blob refs from the blobs store
     if (name === 'visits') {
       const v = await txReq('visits', 'readonly', s => s.get(String(id)));
       if (v) {
         for (const k of ['photos', 'documents']) {
           if (Array.isArray(v[k])) for (const item of v[k]) {
-            if (item.blobId) await delBlob(item.blobId).catch(() => {});
+            if (item.blobId) await delBlob(item.blobId);
           }
         }
       }
@@ -1672,7 +1995,7 @@ const repo = {
       const all = await txReq('visits', 'readonly', s => s.getAll());
       for (const v of all) for (const k of ['photos', 'documents']) {
         if (Array.isArray(v[k])) for (const item of v[k]) {
-          if (item.blobId) await delBlob(item.blobId).catch(() => {});
+          if (item.blobId) await delBlob(item.blobId);
         }
       }
     }
@@ -1680,13 +2003,73 @@ const repo = {
   },
 };
 
+// Helpers used by the backup/restore handler further below.
+function _blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+async function _dataUrlToBlob(dataUrl) {
+  const resp = await fetch(dataUrl);
+  return resp.blob();
+}
+
 // ═══ Helpers ═════════════════════════════════════════
 const e = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtDate = (s) => { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? '—' : d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' }); };
+const fmtDateTime = (s) => { if (!s) return ''; const d = new Date(s); if (isNaN(d)) return ''; return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' в ' + d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' }); };
 const fmtDateParts = (s) => { if (!s) return null; const d = new Date(s); if (isNaN(d)) return null; return { day: String(d.getDate()).padStart(2,'0'), mon: String(d.getMonth()+1).padStart(2,'0'), year: d.getFullYear() }; };
 const fmtMoney = (n) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Math.round((Number(n)||0)*100)/100) + ' ₽';
 const fmtKm = (n) => n ? Number(n).toLocaleString('ru-RU') + ' км' : '—';
 const digits = (s) => String(s || '').replace(/\D/g, '');
+const normalizePlate = (s) => String(s || '').replace(/\s+/g, '').toUpperCase();
+// Suggested filename for browser "Save as PDF" (uses document.title)
+const printFileName = (kind, card, dateStr) => {
+  const parts = [kind];
+  if (card && card.surname) parts.push(String(card.surname).trim());
+  const plate = card ? normalizePlate(card.plate) : '';
+  if (plate) parts.push(plate);
+  if (dateStr) { const d = fmtDate(dateStr); if (d && d !== '—') parts.push(d.replace(/\./g, '-')); }
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+};
+// Local YYYY-MM-DD for today (no TZ shift)
+const todayLocal = () => { const d = new Date(); const p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+// Validate a scheduled-visit date/time. Returns error string, or null if OK.
+const validAppt = (date, time) => {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'Укажите корректную дату';
+  if (time && !/^\d{2}:\d{2}$/.test(time)) return 'Некорректное время';
+  const d = new Date(date + 'T' + (time || '00:00'));
+  if (isNaN(d)) return 'Некорректная дата или время';
+  if (date < todayLocal()) return 'Дата уже прошла';
+  return null;
+};
+const schedFieldsHTML = (a = {}) => `
+  <input type="date" name="date" required min="${todayLocal()}" value="${e(a.date || '')}" aria-label="Дата">
+  <input type="time" name="time" value="${e(a.time || '')}" aria-label="Время">
+  <input type="text" name="note" value="${e(a.note || '')}" placeholder="Заметка — например: замена масла" aria-label="Заметка">`;
+// Scheduled-visits list markup (sorted), reused for in-place repaint
+const schedListHTML = (raw) => {
+  const list = (raw || []).slice().sort((a,b) => ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
+  if (!list.length) return `<div class="sched-empty">Пока ничего не запланировано</div>`;
+  return list.map(a => `
+    <div class="sched-row" data-ap="${e(a.id)}">
+      <span class="sched-when"><span class="sched-date">${e(fmtDate(a.date))}</span>${a.time ? `<span class="sched-time">${e(a.time)}</span>` : ''}</span>
+      <span class="sched-note">${e(a.note || '')}</span>
+      <button type="button" class="sched-edit" data-ap-edit="${e(a.id)}" title="Изменить" aria-label="Изменить">✎</button>
+      <button type="button" class="sched-del" data-ap-del="${e(a.id)}" title="Удалить" aria-label="Удалить">×</button>
+    </div>`).join('');
+};
+function formatPlate(s) {
+  if (!s) return '';
+  const n = normalizePlate(s);
+  // Standard Russian plate: L DDD LL DDD (1 letter, 3 digits, 2 letters, 2-3 digit region)
+  const m = n.match(/^([A-ZА-ЯЁ])(\d{3})([A-ZА-ЯЁ]{2})(\d{2,3})$/);
+  if (m) return `${m[1]} ${m[2]} ${m[3]} ${m[4]}`;
+  return n;
+}
 
 const STATUS = {
   in_progress: { label: 'В работе', cls: 'stamp-active' },
@@ -1794,6 +2177,7 @@ async function dispatch() {
         await r.handler(params);
         animatePageEnter();
         bindStatusStamps();
+        bindDeliveryEditors();
       } catch (err) {
         app.innerHTML = `<div class="empty"><div class="empty-title">Сбой: ${e(err.message)}</div></div>`;
         console.error(err);
@@ -1813,8 +2197,37 @@ async function dispatch() {
 window.addEventListener('hashchange', dispatch);
 
 // ═══ Visit rendering ═════════════════════════════════
+function worksTableHTML(works) {
+  return `
+    <div class="works">
+      <div class="works-head">Работы · <span style="color:var(--seal);font-weight:700">${works.length}</span></div>
+      <table class="works-table">
+        <thead><tr><th>Тип работы</th><th>Мастер</th><th class="right">Стоимость</th></tr></thead>
+        <tbody>${works.map(w => `<tr>
+          <td class="work-type">${e(w.type || '—')}</td>
+          <td class="work-mech">${e(w.mechanic || '—')}</td>
+          <td class="work-cost">${(Number(w.cost) || 0) > 0 ? fmtMoney(w.cost) : '—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+  `;
+}
+function partsTableHTML(parts) {
+  return `
+    <div class="works">
+      <div class="works-head">Детали для заказа · <span style="color:var(--seal);font-weight:700">${parts.length}</span></div>
+      <table class="works-table parts-table">
+        <thead><tr><th>Деталь</th><th class="right">Стоимость</th></tr></thead>
+        <tbody>${parts.map(p => `<tr>
+          <td class="part-name">${e(p.name || '—')}</td>
+          <td class="part-cost">${(Number(p.cost) || 0) > 0 ? fmtMoney(p.cost) : '—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+  `;
+}
 function visitTotalsHTML(v) {
-  const cost = Number(v.cost) || 0;
+  const cost = worksTotal(v);
   const pre = Number(v.prepayment) || 0;
   const due = cost - pre;
   if (cost === 0 && pre === 0) return '';
@@ -1828,35 +2241,129 @@ function visitTotalsHTML(v) {
     </div>
   `;
 }
+function worksOf(v) {
+  // Returns array of { type, mechanic, cost }. Backwards-compatible with legacy work_done/mechanic/cost.
+  if (Array.isArray(v.works) && v.works.length) return v.works;
+  if ((v.work_done && String(v.work_done).trim()) || v.mechanic || v.cost) {
+    return [{ type: v.work_done || '', mechanic: v.mechanic || '', cost: Number(v.cost) || 0 }];
+  }
+  return [];
+}
+function partsOf(v) {
+  // Returns array of { name, cost }. Returns [] for legacy string parts_to_order.
+  if (Array.isArray(v.parts) && v.parts.length) return v.parts;
+  return [];
+}
+function legacyPartsText(v) {
+  // Old visits stored parts_to_order as plain string. Show only when no structured parts.
+  if (Array.isArray(v.parts) && v.parts.length) return '';
+  return (typeof v.parts_to_order === 'string' && v.parts_to_order.trim()) ? v.parts_to_order : '';
+}
+function partsTotal(v) {
+  return partsOf(v).reduce((s, p) => s + (Number(p.cost) || 0), 0);
+}
+function visitTotal(v) {
+  const works = worksOf(v);
+  const parts = partsOf(v);
+  if (works.length || parts.length) {
+    const wSum = works.reduce((s, w) => s + (Number(w.cost) || 0), 0);
+    const pSum = parts.reduce((s, p) => s + (Number(p.cost) || 0), 0);
+    return wSum + pSum;
+  }
+  return Number(v.cost) || 0;
+}
+// Kept for backward compat with existing call sites — defers to visitTotal now.
+function worksTotal(v) { return visitTotal(v); }
+
+// Mutable suggestion state — populated from prior visits, refreshable with current form state.
+const suggestState = { workTypes: new Set(), mechanics: new Set(), partNames: new Set() };
+
+function refreshSuggestionLists(extra = {}) {
+  const form = document.getElementById('visit-form');
+  if (!form) return;
+  const types = new Set(suggestState.workTypes);
+  const mechs = new Set(suggestState.mechanics);
+  const names = new Set(suggestState.partNames);
+  for (const w of (extra.works || [])) {
+    if (w.type && String(w.type).trim())     types.add(String(w.type).trim());
+    if (w.mechanic && String(w.mechanic).trim()) mechs.add(String(w.mechanic).trim());
+  }
+  for (const p of (extra.parts || [])) {
+    if (p.name && String(p.name).trim()) names.add(String(p.name).trim());
+  }
+  const ensureList = (id, values) => {
+    let dl = document.getElementById(id);
+    if (!dl) { dl = document.createElement('datalist'); dl.id = id; form.appendChild(dl); }
+    dl.innerHTML = [...values]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, 'ru'))
+      .map(v => `<option value="${e(v)}"></option>`)
+      .join('');
+  };
+  ensureList('suggest-work-type', types);
+  ensureList('suggest-work-mech', mechs);
+  ensureList('suggest-part-name', names);
+}
+
+async function loadVisitSuggestionBase() {
+  // Reset and rebuild from the persisted visits (Firestore-cached locally so cheap).
+  suggestState.workTypes.clear();
+  suggestState.mechanics.clear();
+  suggestState.partNames.clear();
+  const allVisits = await repo.list('visits');
+  for (const vv of allVisits) {
+    if (Array.isArray(vv.works)) for (const w of vv.works) {
+      if (w.type)     suggestState.workTypes.add(String(w.type).trim());
+      if (w.mechanic) suggestState.mechanics.add(String(w.mechanic).trim());
+    }
+    if (Array.isArray(vv.parts)) for (const p of vv.parts) {
+      if (p.name) suggestState.partNames.add(String(p.name).trim());
+    }
+    if (vv.mechanic)  suggestState.mechanics.add(String(vv.mechanic).trim());
+    if (vv.work_done) suggestState.workTypes.add(String(vv.work_done).trim());
+  }
+}
 function visitHTML(v, opts = {}) {
   const dp = fmtDateParts(v.visit_date);
   const dateBlock = dp ? `<div class="visit-date">${dp.day}.${dp.mon}.<span class="y">${dp.year}</span></div>` : `<div class="visit-date muted">—</div>`;
+  const signDate = (() => { const s = v.delivered_at || v.visit_date; if (!s) return ''; const f = fmtDate(s); return f === '—' ? '' : f; })();
+  const works = worksOf(v);
+  const parts = partsOf(v);
+  const legacyParts = legacyPartsText(v);
   const fields = [
     ['Пожелания клиента', v.wishes],
     ['Свои детали', v.own_parts],
-    ['Детали для заказа', v.parts_to_order],
+    ['Детали для заказа', legacyParts],
     ['Диагностика', v.diagnostics],
     ['Рекомендации', v.recommendations],
-    ['Выполненная работа', v.work_done],
-    ['Мастер', v.mechanic],
     ['Заметки', v.notes],
   ].filter(([_, val]) => val && String(val).trim());
   const photos = v.photos || [];
-  const due = (Number(v.cost)||0) - (Number(v.prepayment)||0);
-  const showTotal = (Number(v.cost)||0) > 0;
+  const total = worksTotal(v);
+  const due = total - (Number(v.prepayment)||0);
+  const showTotal = total > 0;
   return `
     <article class="visit" data-vid="${v.id}">
       <div class="visit-head">
         ${dateBlock}
         ${v.mileage ? `<div class="visit-mileage">${fmtKm(v.mileage)}</div>` : '<div></div>'}
-        ${stamp(v.status, v.id)}
+        <div class="status-cell">${stamp(v.status, v.id)}${v.status === 'delivered' && v.delivered_at ? `<div class="delivered-at editable" data-vid="${v.id}" role="button" tabindex="0" title="Изменить дату выдачи">выдан ${fmtDateTime(v.delivered_at)}</div>` : ''}</div>
         ${showTotal ? `<div class="visit-total">${fmtMoney(due)}</div>` : '<div></div>'}
       </div>
       <div class="visit-body">
-        ${fields.length ? `<dl class="fields">${fields.map(([k,val])=>`<div class="field-row"><dt>${e(k)}</dt><dd>${e(val)}</dd></div>`).join('')}</dl>` : `<div class="muted" style="font-style:italic">Подробности не заполнены.</div>`}
+        ${fields.length || works.length || parts.length ? `<dl class="fields">${fields.map(([k,val])=>`<div class="field-row"><dt>${e(k)}</dt><dd>${e(val)}</dd></div>`).join('')}</dl>` : `<div class="muted" style="font-style:italic">Подробности не заполнены.</div>`}
+        ${parts.length ? partsTableHTML(parts) : ''}
+        ${works.length ? worksTableHTML(works) : ''}
         ${visitTotalsHTML(v)}
-        ${photos.length ? `<div class="photos"><div class="photos-head">Фото · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>`<figure class="photo-thumb${p.pendingId?' pending':''}" data-vid="${v.id}" data-pi="${i}"><img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy"><figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`).join('')}</div></div>` : ''}
+        ${photos.length ? `<div class="photos"><div class="photos-head">Фото и видео · <span class="accent">${photos.length}</span></div><div class="photo-grid">${photos.map((p,i)=>{const isVideo=mediaKind(p)==='video';const src=p.url||p.dataUrl||'';return `<figure class="photo-thumb${p.pendingId?' pending':''}${isVideo?' is-video':''}" data-vid="${v.id}" data-pi="${i}">${isVideo?`<video src="${e(src)}" preload="metadata" muted playsinline></video><span class="play-overlay" aria-hidden="true">▶</span>`:`<img src="${e(src)}" alt="" loading="lazy">`}<figcaption class="caption ${p.comment?'':'faint'}">${p.comment?e(p.comment):'без комментария'}</figcaption></figure>`;}).join('')}</div></div>` : ''}
         ${(v.documents||[]).length ? `<div class="docs"><div class="docs-head">Документы · <span class="accent">${v.documents.length}</span></div><div class="docs-list">${v.documents.map(d => d.url ? `<a href="${e(d.url)}" target="_blank" rel="noopener" class="doc-item"><span class="doc-icon">${docIcon(d.name)}</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">${fmtBytes(d.bytes || d.size)}</span></a>` : `<div class="doc-item pending"><span class="doc-icon">⏳</span><span class="doc-name">${e(d.name)}</span><span class="doc-meta">ожидает сети</span></div>`).join('')}</div></div>` : ''}
+      </div>
+      <div class="print-sign" aria-hidden="true">
+        <div class="sign-row">
+          <div class="sign-field"><span class="sign-line"></span><span class="sign-cap">Подпись клиента</span></div>
+          <div class="sign-field sign-date"><span class="sign-line">${signDate}</span><span class="sign-cap">Дата</span></div>
+        </div>
+        <div class="sign-note">С объёмом выполненных работ и стоимостью ознакомлен, претензий не имею.</div>
       </div>
       ${opts.actions !== false ? `<div class="visit-actions no-print"><button class="btn btn-text btn-sm" data-print-visit="${v.id}">Печать визита</button><a href="#/visits/${v.id}/edit" class="btn btn-text btn-sm">Редактировать</a><button class="btn btn-text btn-sm btn-danger" data-del-visit="${v.id}">Удалить</button></div>` : ''}
     </article>
@@ -1864,11 +2371,21 @@ function visitHTML(v, opts = {}) {
 }
 function bindVisitActions(reload) {
   document.querySelectorAll('[data-print-visit]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const id = btn.dataset.printVisit;
       document.querySelectorAll('.visit').forEach(el => el.classList.toggle('print-target', el.dataset.vid === id));
       document.body.classList.add('print-visit-only');
-      const cleanup = () => { document.body.classList.remove('print-visit-only'); window.removeEventListener('afterprint', cleanup); };
+      const prevTitle = document.title;
+      try {
+        const v = await repo.get('visits', id);
+        const c = v ? await repo.get('cards', v.card_id) : null;
+        document.title = printFileName('Визит', c, v && v.visit_date);
+      } catch (_) {}
+      const cleanup = () => {
+        document.body.classList.remove('print-visit-only');
+        document.title = prevTitle;
+        window.removeEventListener('afterprint', cleanup);
+      };
       window.addEventListener('afterprint', cleanup);
       window.print();
     });
@@ -1889,8 +2406,10 @@ function bindVisitActions(reload) {
       const src = p.url || p.dataUrl;
       const lb = document.createElement('div');
       lb.className = 'lightbox';
-      lb.innerHTML = `<img src="${e(src)}" alt="">${p.comment ? `<div class="lb-cap">${e(p.comment)}</div>` : ''}`;
-      lb.addEventListener('click', () => lb.remove());
+      const isVideo = mediaKind(p) === 'video';
+      lb.innerHTML = `${isVideo ? `<video src="${e(src)}" controls autoplay playsinline></video>` : `<img src="${e(src)}" alt="">`}${p.comment ? `<div class="lb-cap">${e(p.comment)}</div>` : ''}`;
+      // Click on background closes; click on the media itself shouldn't
+      lb.addEventListener('click', (ev) => { if (ev.target === lb) lb.remove(); });
       document.body.appendChild(lb);
     });
   });
@@ -1903,6 +2422,37 @@ function bindRowClicks() {
 
 let activePopover = null;
 function clearPopover() { if (activePopover) { activePopover.remove(); activePopover = null; } }
+
+// In-place update of every stamp+delivered-at for a given visit id, so a
+// status change doesn't trigger a full route re-render (jarring UX).
+function updateStampUI(vid, newStatus, deliveredAt) {
+  const cfg = STATUS[newStatus];
+  if (!cfg) return;
+  document.querySelectorAll(`.stamp[data-vid="${vid}"]`).forEach(el => {
+    el.className = `stamp ${cfg.cls}`;
+    el.textContent = cfg.label;
+    el.dataset.status = newStatus;
+    const cell = el.parentElement;
+    if (cell && cell.classList.contains('status-cell')) {
+      const existing = cell.querySelector('.delivered-at');
+      if (newStatus === 'delivered' && deliveredAt) {
+        const text = `выдан ${fmtDateTime(deliveredAt)}`;
+        if (existing) existing.textContent = text;
+        else {
+          const d = document.createElement('div');
+          d.className = 'delivered-at editable';
+          d.dataset.vid = vid;
+          d.setAttribute('role', 'button');
+          d.setAttribute('tabindex', '0');
+          d.title = 'Изменить дату выдачи';
+          d.textContent = text;
+          cell.appendChild(d);
+        }
+      } else if (existing) existing.remove();
+    }
+  });
+  bindDeliveryEditors();
+}
 function bindStatusStamps() {
   document.querySelectorAll('.stamp[data-vid]').forEach(s => {
     s.addEventListener('click', (ev) => { ev.stopPropagation(); openStatusPopover(s); });
@@ -1937,10 +2487,81 @@ function openStatusPopover(anchor) {
       const newStatus = b.dataset.set;
       if (newStatus === current) { clearPopover(); return; }
       const v = await repo.get('visits', vid);
-      if (v) { v.status = newStatus; await repo.put('visits', v); flash('Статус обновлён'); }
+      let deliveredAt = null;
+      if (v) {
+        v.status = newStatus;
+        if (newStatus === 'delivered' && !v.delivered_at) v.delivered_at = new Date().toISOString();
+        if (newStatus !== 'delivered' && v.delivered_at) delete v.delivered_at;
+        deliveredAt = v.delivered_at || null;
+        await repo.put('visits', v);
+        flash(newStatus === 'delivered' ? 'Машина выдана' : 'Статус обновлён');
+      }
       clearPopover();
-      dispatch();
+      // Patch the DOM in place — no full route re-render
+      updateStampUI(vid, newStatus, deliveredAt);
     });
+  });
+  setTimeout(() => {
+    const closer = (e) => { if (!pop.contains(e.target)) { clearPopover(); document.removeEventListener('click', closer); } };
+    document.addEventListener('click', closer);
+  }, 50);
+}
+
+// ISO string → value for <input type="datetime-local"> (local time, no TZ shift)
+const isoToLocalInput = (iso) => {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+function bindDeliveryEditors() {
+  document.querySelectorAll('.delivered-at.editable[data-vid]').forEach(el => {
+    if (el.dataset.bound) return;
+    el.dataset.bound = '1';
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); openDeliveryEditor(el); });
+    el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openDeliveryEditor(el); } });
+  });
+}
+
+async function openDeliveryEditor(anchor) {
+  clearPopover();
+  const vid = anchor.dataset.vid;
+  const v = await repo.get('visits', vid);
+  if (!v) return;
+  const pop = document.createElement('div');
+  pop.className = 'status-popover';
+  pop.style.minWidth = '240px';
+  pop.innerHTML = `
+    <div class="popover-title">Дата выдачи</div>
+    <input type="datetime-local" class="dt-pop-input" value="${isoToLocalInput(v.delivered_at || new Date().toISOString())}">
+    <div class="dt-pop-row">
+      <button type="button" class="btn btn-text btn-sm" data-dt-cancel>Отмена</button>
+      <button type="button" class="btn btn-primary btn-sm" data-dt-save>Сохранить</button>
+    </div>
+  `;
+  document.body.appendChild(pop);
+  activePopover = pop;
+  const rect = anchor.getBoundingClientRect();
+  const popW = pop.offsetWidth;
+  let left = rect.left + window.scrollX;
+  if (left + popW > window.innerWidth - 12) left = window.innerWidth - popW - 12;
+  if (left < 12) left = 12;
+  pop.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  pop.style.left = left + 'px';
+  const input = pop.querySelector('.dt-pop-input');
+  input.focus();
+  pop.querySelector('[data-dt-cancel]').addEventListener('click', (ev) => { ev.stopPropagation(); clearPopover(); });
+  pop.querySelector('[data-dt-save]').addEventListener('click', async (ev) => {
+    ev.stopPropagation();
+    if (!input.value) { clearPopover(); return; }
+    const d = new Date(input.value);
+    if (isNaN(d)) { flash('Некорректная дата'); return; }
+    v.delivered_at = d.toISOString();
+    await repo.put('visits', v);
+    clearPopover();
+    updateStampUI(vid, v.status, v.delivered_at);
+    flash('Дата выдачи обновлена');
   });
   setTimeout(() => {
     const closer = (e) => { if (!pop.contains(e.target)) { clearPopover(); document.removeEventListener('click', closer); } };
@@ -1988,7 +2609,7 @@ route('/', async () => {
         ${recent.length === 0 ? `<div class="empty"><div class="empty-title">Записей ещё нет</div></div>` : `
           <table class="ledger">
             <thead><tr><th style="width:90px">Дата</th><th>Клиент</th><th>Машина</th><th>Гос. номер</th><th class="right">Стоимость</th><th>Статус</th></tr></thead>
-            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
+            <tbody>${recent.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(normalizePlate(c.plate)||'—')}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
           </table>
         `}
       </div>
@@ -2010,7 +2631,7 @@ function activeBlock(title, visits, cardById, accent) {
     </div>
     <div class="sheet">
       <table class="ledger">
-        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right">${v.mileage ? fmtKm(v.mileage) : ''}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
+        <tbody>${visits.map(v => { const c = cardById[v.card_id] || {}; return `<tr class="click" data-go="#/cards/${c.id||''}"><td class="ledger-num" style="width:90px">${fmtDate(v.visit_date)}</td><td class="ledger-name">${e(c.surname||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(normalizePlate(c.plate)||'—')}</td><td class="right">${v.mileage ? fmtKm(v.mileage) : ''}</td><td class="right num">${v.cost ? fmtMoney(v.cost) : ''}</td><td>${stamp(v.status, v.id)}</td></tr>`; }).join('')}</tbody>
       </table>
     </div>
   `;
@@ -2030,7 +2651,7 @@ route('/cards', async () => {
 
     <label class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="search" id="q" placeholder="Иванов · A123BC · Toyota · +7916… · 28.04.26" autofocus autocomplete="off">
+      <input type="search" id="q" placeholder="Иванов · A123BC · VIN · Toyota · +7916… · 28.04.26" autofocus autocomplete="off">
       <span class="search-meta" id="qmeta">${cards.length} ${plural(cards.length, ['карточка','карточки','карточек'])}</span>
     </label>
 
@@ -2042,8 +2663,11 @@ route('/cards', async () => {
     const fDigits = digits(f);
     const filtered = cards.filter(c => {
       if (!f) return true;
-      const blob = [c.surname, c.first_name, c.plate, c.make, c.model, c.notes].filter(Boolean).join(' ').toLowerCase();
+      const blob = [c.surname, c.first_name, c.plate, normalizePlate(c.plate), c.make, c.model, c.year, c.vin, c.notes].filter(Boolean).join(' ').toLowerCase();
       if (blob.includes(f)) return true;
+      // Spaces-insensitive plate match: "А123BC77" finds "А 123 BC 77" and vice versa
+      const fStripped = f.replace(/\s+/g, '');
+      if (fStripped && fStripped !== f && blob.includes(fStripped)) return true;
       if (fDigits && digits(c.phone).includes(fDigits)) return true;
       const vs = visitsByCard[c.id] || [];
       if (vs.some(v => fmtDate(v.visit_date).toLowerCase().includes(f))) return true;
@@ -2055,7 +2679,7 @@ route('/cards', async () => {
     out.innerHTML = `
       <table class="ledger">
         <thead><tr><th>Клиент</th><th>Телефон</th><th>Машина</th><th>Гос. номер</th><th class="right" style="width:80px">Визиты</th><th style="width:110px">Последний</th></tr></thead>
-        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(c.plate||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
+        <tbody>${filtered.map(c => { const vs = visitsByCard[c.id] || []; const last = vs[0]; return `<tr class="click" data-go="#/cards/${c.id}"><td class="ledger-name">${e(c.surname||'—')}${c.first_name?` <span class="muted" style="font-style:italic; font-weight:400; font-size:0.92rem">${e(c.first_name.split(' ')[0])}</span>`:''}</td><td class="ledger-phone">${e(c.phone||'—')}</td><td>${e(c.make||'—')} <span class="muted">${e(c.model||'')}</span></td><td class="ledger-plate">${e(normalizePlate(c.plate)||'—')}</td><td class="right num">${vs.length}</td><td class="ledger-num">${last?fmtDate(last.visit_date):'—'}</td></tr>`; }).join('')}</tbody>
       </table>
     `;
     bindRowClicks();
@@ -2082,6 +2706,7 @@ route('/cards/:id', async ({id}) => {
   const visits = (await repo.byIdx('visits', 'card_id', id)).sort((a,b) => (b.visit_date||'').localeCompare(a.visit_date||''));
   const lastVisit = visits[0];
   const since = card.created_at ? new Date(card.created_at).toLocaleDateString('ru-RU', { month:'long', year:'numeric' }) : '';
+  document.title = printFileName('Карточка', card);
 
   app.innerHTML = `
     <section class="page-head no-print"><div class="crumbs"><a href="#/cards">← Картотека</a></div></section>
@@ -2096,17 +2721,30 @@ route('/cards/:id', async ({id}) => {
       <div class="hero-actions no-print">
         <a href="#/cards/${id}/visits/new" class="btn btn-primary">+ Новый визит</a>
         <a href="#/cards/${id}/edit" class="btn btn-ghost">Редактировать</a>
-        <button class="btn btn-ghost" id="print-card">Печать</button>
         <button class="btn btn-text btn-danger" id="del-card">Удалить</button>
       </div>
     </section>
 
     <section class="car-block">
       <div>
-        <div class="car-name">${e(card.make || '—')}${card.model ? ` <span class="model">${e(card.model)}</span>` : ''}</div>
-        <div class="car-meta">${lastVisit?.mileage ? `<span>пробег ${fmtKm(lastVisit.mileage)}</span><span class="dot">·</span>` : ''}${lastVisit ? `<span>последний визит ${fmtDate(lastVisit.visit_date)}</span>` : '<span>визитов пока нет</span>'}</div>
+        <div class="car-name">${e(card.make || '—')}${card.model ? ` <span class="model">${e(card.model)}</span>` : ''}${card.year ? ` <span class="model">· ${e(card.year)}</span>` : ''}</div>
+        <div class="car-meta">${lastVisit?.mileage ? `<span>пробег ${fmtKm(lastVisit.mileage)}</span><span class="dot">·</span>` : ''}${lastVisit ? `<span><span class="meta-lab">последний визит </span>${fmtDate(lastVisit.visit_date)}</span>` : '<span>визитов пока нет</span>'}</div>
+        ${card.vin ? `<div class="car-meta"><span class="lab" style="text-transform:uppercase;font-size:11px;letter-spacing:0.08em;color:var(--ink-3);margin-right:6px">VIN</span><span class="mono" style="font-size:0.92rem;letter-spacing:0.04em">${e(card.vin)}</span></div>` : ''}
       </div>
-      <div class="car-plate">${e(card.plate || '—')}</div>
+      <div class="car-plate">${e(normalizePlate(card.plate) || '—')}</div>
+    </section>
+
+    <section class="sched-block no-print">
+      <div class="sched-head">Запланированные визиты</div>
+      <div class="sched-list" id="sched-list">${schedListHTML(card.appointments)}</div>
+      <div class="sched-add-wrap">
+        <button type="button" class="btn btn-ghost btn-sm" id="sched-toggle">+ Добавить</button>
+        <form class="sched-add" id="sched-add" autocomplete="off" hidden>
+          ${schedFieldsHTML()}
+          <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+          <button type="button" class="btn btn-text btn-sm" id="sched-cancel">Отмена</button>
+        </form>
+      </div>
     </section>
 
     ${card.notes ? `<div class="notes-block"><span class="lab">Заметки</span>${e(card.notes)}</div>` : ''}
@@ -2121,7 +2759,6 @@ route('/cards/:id', async ({id}) => {
     ` : visits.map(v => visitHTML(v)).join('')}
   `;
 
-  document.getElementById('print-card').addEventListener('click', () => window.print());
   document.getElementById('del-card').addEventListener('click', async () => {
     if (!confirm(`Удалить карточку «${card.surname}» вместе со всеми визитами?`)) return;
     for (const visit of visits) await repo.del('visits', visit.id);
@@ -2129,6 +2766,84 @@ route('/cards/:id', async ({id}) => {
     flash('Карточка удалена');
     location.hash = '#/cards';
   });
+  const schedListEl = document.getElementById('sched-list');
+  const schedForm   = document.getElementById('sched-add');
+  const schedToggle = document.getElementById('sched-toggle');
+  const schedCancel = document.getElementById('sched-cancel');
+  function startEdit(apId) {
+    const a = (card.appointments || []).find(x => x.id === apId);
+    const row = schedListEl && schedListEl.querySelector(`.sched-row[data-ap="${apId}"]`);
+    if (!a || !row) return;
+    row.innerHTML = `<form class="sched-add sched-edit-form" autocomplete="off">
+        ${schedFieldsHTML(a)}
+        <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+        <button type="button" class="btn btn-text btn-sm" data-edit-cancel>Отмена</button>
+      </form>`;
+    const f = row.querySelector('form');
+    f.querySelector('input[name="date"]').focus();
+    f.querySelector('[data-edit-cancel]').addEventListener('click', () => paintSched());
+    f.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(f);
+      const date = (fd.get('date') || '').trim();
+      const time = (fd.get('time') || '').trim();
+      const err = validAppt(date, time);
+      if (err) { flash(err); return; }
+      const list = card.appointments || [];
+      const idx = list.findIndex(x => x.id === apId);
+      if (idx >= 0) list[idx] = { ...list[idx], date, time, note: (fd.get('note') || '').trim() };
+      card.appointments = list;
+      await repo.put('cards', card);
+      paintSched();
+      flash('Визит обновлён');
+    });
+  }
+  function paintSched() {
+    if (!schedListEl) return;
+    schedListEl.innerHTML = schedListHTML(card.appointments);
+    schedListEl.querySelectorAll('[data-ap-del]').forEach(b => {
+      b.addEventListener('click', async () => {
+        card.appointments = (card.appointments || []).filter(a => a.id !== b.dataset.apDel);
+        await repo.put('cards', card);
+        paintSched();
+        flash('Запланированный визит удалён');
+      });
+    });
+    schedListEl.querySelectorAll('[data-ap-edit]').forEach(b => {
+      b.addEventListener('click', () => startEdit(b.dataset.apEdit));
+    });
+  }
+  function showSchedForm(show) {
+    if (!schedForm || !schedToggle) return;
+    schedForm.hidden = !show;
+    schedToggle.hidden = show;
+    if (show) { const di = schedForm.querySelector('input[name="date"]'); if (di) di.focus(); }
+  }
+  if (schedToggle) schedToggle.addEventListener('click', () => showSchedForm(true));
+  if (schedCancel) schedCancel.addEventListener('click', () => { schedForm.reset(); showSchedForm(false); });
+  if (schedForm) {
+    schedForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(schedForm);
+      const date = (fd.get('date') || '').trim();
+      const time = (fd.get('time') || '').trim();
+      const err = validAppt(date, time);
+      if (err) { flash(err); return; }
+      const entry = {
+        id: 'ap' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        date,
+        time,
+        note: (fd.get('note') || '').trim(),
+      };
+      card.appointments = [...(card.appointments || []), entry];
+      await repo.put('cards', card);
+      schedForm.reset();
+      showSchedForm(false);
+      paintSched();
+      flash('Визит запланирован');
+    });
+  }
+  paintSched();
   bindVisitActions(() => dispatch());
   staggerChildren('.visit', { delay: 220, step: 70, duration: 420 });
 });
@@ -2163,14 +2878,16 @@ function cardForm(c) {
         <div class="input-group">
           <div class="input-row"><label for="f-make">Марка</label><input id="f-make" name="make" required value="${e(c.make||'')}" placeholder="Toyota"></div>
           <div class="input-row"><label for="f-model">Модель</label><input id="f-model" name="model" value="${e(c.model||'')}" placeholder="Corolla"></div>
-          <div class="input-row"><label for="f-plate">Гос. номер</label><input id="f-plate" name="plate" required value="${e(c.plate||'')}" placeholder="A 123 BC 77"></div>
+          <div class="input-row"><label for="f-year">Год выпуска</label><input id="f-year" name="year" type="number" min="1950" max="${new Date().getFullYear()+1}" value="${e(c.year||'')}" placeholder="${new Date().getFullYear()}"></div>
+          <div class="input-row"><label for="f-plate">Гос. номер</label><input id="f-plate" name="plate" required value="${e(normalizePlate(c.plate)||'')}" placeholder="A123BC77" autocapitalize="characters" autocomplete="off"></div>
+          <div class="input-row"><label for="f-vin">VIN</label><input id="f-vin" name="vin" value="${e(c.vin||'')}" placeholder="JTNBE40K003456789" maxlength="17" autocapitalize="characters" autocomplete="off"></div>
         </div>
       </div>
 
       <div class="form-section">
         <div class="field-block">
           <label for="f-notes">Заметки</label>
-          <textarea id="f-notes" name="notes" placeholder="VIN, второй контакт, особенности">${e(c.notes||'')}</textarea>
+          <textarea id="f-notes" name="notes" placeholder="Второй контакт, особенности">${e(c.notes||'')}</textarea>
         </div>
       </div>
 
@@ -2183,9 +2900,33 @@ function cardForm(c) {
 }
 function bindCardForm(c) {
   maskPhone(document.getElementById('f-phone'));
+  const vinInput = document.getElementById('f-vin');
+  if (vinInput) {
+    vinInput.style.textTransform = 'uppercase';
+    vinInput.addEventListener('input', () => {
+      const cleaned = vinInput.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (cleaned !== vinInput.value) vinInput.value = cleaned;
+    });
+  }
+  const plateInput = document.getElementById('f-plate');
+  if (plateInput) {
+    plateInput.style.textTransform = 'uppercase';
+    plateInput.addEventListener('input', () => {
+      // Live: strip spaces, uppercase
+      const cleaned = normalizePlate(plateInput.value);
+      if (cleaned !== plateInput.value) {
+        const pos = plateInput.selectionStart - (plateInput.value.length - cleaned.length);
+        plateInput.value = cleaned;
+        try { plateInput.setSelectionRange(pos, pos); } catch {}
+      }
+    });
+  }
   document.getElementById('card-form').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const data = Object.fromEntries(new FormData(ev.target));
+    if (data.vin) data.vin = data.vin.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (data.plate) data.plate = normalizePlate(data.plate);
+    if (data.year) data.year = Number(data.year) || ''; else delete data.year;
     if (c.id) {
       await repo.put('cards', { ...c, ...data });
       flash('Сохранено');
@@ -2207,7 +2948,7 @@ route('/cards/:id/visits/new', async ({id}) => {
     <section class="page-head">
       <div class="crumbs"><a href="#/cards/${id}">← ${e(card.surname || 'Карточка')}</a> · новый визит</div>
       <h1 class="h1">Новый визит</h1>
-      <p class="lede">${e(card.surname || '')} · ${e(card.make || '')} ${e(card.model || '')} · <span class="mono" style="font-size: 0.9rem">${e(card.plate || '')}</span></p>
+      <p class="lede">${e(card.surname || '')} · ${e(card.make || '')} ${e(card.model || '')}${card.year?` · ${e(card.year)}`:''} · <span class="mono" style="font-size: 0.9rem">${e(normalizePlate(card.plate) || '')}</span></p>
     </section>
     ${visitForm(draft)}
   `;
@@ -2233,6 +2974,7 @@ function visitForm(v) {
   const date = v.visit_date ? v.visit_date.slice(0,10) : '';
   return `
     <form class="form-shell" id="visit-form">
+      <div class="suggest-dropdown" id="suggest-dd" hidden></div>
       <div class="form-section">
         <div class="form-section-title">Приём</div>
         <div class="input-group">
@@ -2241,36 +2983,41 @@ function visitForm(v) {
         </div>
         <div class="field-block"><label for="vf-wishes">Пожелания клиента</label><textarea id="vf-wishes" name="wishes" placeholder="Что просит сделать или беспокоит">${e(v.wishes||'')}</textarea></div>
         <div class="field-block"><label for="vf-own">Свои детали</label><textarea id="vf-own" name="own_parts" placeholder="Что клиент привёз с собой">${e(v.own_parts||'')}</textarea></div>
-        <div class="field-block"><label for="vf-order">Детали для заказа</label><textarea id="vf-order" name="parts_to_order" placeholder="Что нужно заказать">${e(v.parts_to_order||'')}</textarea></div>
+
+        <div class="field-block">
+          <label>Детали для заказа</label>
+          <div class="works-edit" id="parts-edit"></div>
+          <button type="button" class="works-add-btn" id="parts-add">+ Добавить деталь</button>
+          <div class="works-edit-total"><span class="lab">Сумма деталей</span><span class="val" id="parts-total">0 ₽</span></div>
+        </div>
       </div>
 
       <div class="form-section">
         <div class="form-section-title">Работа</div>
         <div class="field-block"><label for="vf-diag">Диагностика</label><textarea id="vf-diag" name="diagnostics" placeholder="Что нашли при осмотре">${e(v.diagnostics||'')}</textarea></div>
         <div class="field-block"><label for="vf-rec">Рекомендации</label><textarea id="vf-rec" name="recommendations" placeholder="Что советуем сделать дополнительно">${e(v.recommendations||'')}</textarea></div>
-        <div class="field-block"><label for="vf-work">Выполненная работа</label><textarea id="vf-work" name="work_done" placeholder="Что сделали по факту">${e(v.work_done||'')}</textarea></div>
+
+        <div class="field-block">
+          <label>Выполненные работы</label>
+          <div class="works-edit" id="works-edit"></div>
+          <button type="button" class="works-add-btn" id="works-add">+ Добавить работу</button>
+          <div class="works-edit-total"><span class="lab">Итого</span><span class="val" id="works-total">0 ₽</span></div>
+        </div>
+
         <div class="input-group" style="margin-top:12px">
-          <div class="input-row"><label for="vf-mech">Мастер</label><input id="vf-mech" name="mechanic" value="${e(v.mechanic||'')}"></div>
           <div class="input-row"><label for="vf-status">Статус</label>
             <select id="vf-status" name="status">${Object.entries(STATUS).map(([k,vv])=>`<option value="${k}" ${v.status===k?'selected':''}>${vv.label}</option>`).join('')}</select>
           </div>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <div class="form-section-title">Расчёт</div>
-        <div class="input-group">
-          <div class="input-row"><label for="vf-cost">Стоимость, ₽</label><input id="vf-cost" name="cost" type="number" min="0" step="0.01" value="${v.cost||0}"></div>
           <div class="input-row"><label for="vf-pre">Предоплата, ₽</label><input id="vf-pre" name="prepayment" type="number" min="0" step="0.01" value="${v.prepayment||0}"></div>
         </div>
       </div>
 
       <div class="form-section">
-        <div class="form-section-title">Фото</div>
+        <div class="form-section-title">Фото и видео</div>
         <label class="photo-upload" for="photo-input">
-          <div class="pu-title">Перетащите фото или нажмите чтобы выбрать</div>
-          <div class="pu-hint">JPEG · PNG · сжимаются и загружаются в облако</div>
-          <input type="file" id="photo-input" accept="image/*" multiple hidden>
+          <div class="pu-title">Перетащите фото или короткое видео, или нажмите чтобы выбрать</div>
+          <div class="pu-hint">JPEG · PNG · MP4 · MOV · видео до 50 MB</div>
+          <input type="file" id="photo-input" accept="image/*,video/*" multiple hidden>
         </label>
         <div class="photo-edit-grid" id="photo-grid"></div>
         <div class="upload-status" id="photo-status" hidden></div>
@@ -2280,7 +3027,7 @@ function visitForm(v) {
         <div class="form-section-title">Документы</div>
         <label class="photo-upload" for="doc-input">
           <div class="pu-title">PDF, документы, чеки, диагностика</div>
-          <div class="pu-hint">PDF · DOC · XLS · загружаются в облако</div>
+          <div class="pu-hint">PDF · DOC · XLS · хранятся локально</div>
           <input type="file" id="doc-input" accept="application/pdf,.doc,.docx,.xls,.xlsx,.txt,image/*" multiple hidden>
         </label>
         <div class="docs-edit-list" id="docs-edit-list"></div>
@@ -2301,6 +3048,203 @@ function visitForm(v) {
 function bindVisitForm(v) {
   let photos = (v.photos || []).slice();
   let documents = (v.documents || []).slice();
+  let works = worksOf(v).map(w => ({ type: w.type || '', mechanic: w.mechanic || '', cost: Number(w.cost) || 0 }));
+  let parts = partsOf(v).map(p => ({ name: p.name || '', cost: Number(p.cost) || 0 }));
+  // Start with one empty row so user doesn't have to click "Add" first
+  if (!works.length) works.push({ type: '', mechanic: '', cost: 0 });
+  if (!parts.length) parts.push({ name: '', cost: 0 });
+
+  const worksEdit = document.getElementById('works-edit');
+  const worksTotalEl = document.getElementById('works-total');
+  const partsEdit = document.getElementById('parts-edit');
+  const partsTotalEl = document.getElementById('parts-total');
+
+  const renderWorks = () => {
+    if (!works.length) {
+      worksEdit.innerHTML = `<div class="works-edit-empty">Пока работ нет — нажмите «+ Добавить работу»</div>`;
+    } else {
+      worksEdit.innerHTML = works.map((w, i) => `
+        <div class="works-edit-row" data-i="${i}">
+          <input class="work-type-input" data-k="type" autocomplete="off" placeholder="Например, замена колодок" value="${e(w.type)}">
+          <input class="work-mech-input" data-k="mechanic" autocomplete="off" placeholder="Мастер" value="${e(w.mechanic)}">
+          <input class="work-cost-input" data-k="cost" type="number" min="0" step="0.01" placeholder="0" value="${w.cost || ''}">
+          <button type="button" class="work-remove" data-rm="${i}" aria-label="Удалить работу" title="Удалить">×</button>
+        </div>
+      `).join('');
+      worksEdit.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          const row = inp.closest('.works-edit-row');
+          const i = Number(row.dataset.i);
+          const k = inp.dataset.k;
+          works[i][k] = (k === 'cost') ? (Number(inp.value) || 0) : inp.value;
+          if (k === 'cost') updateWorksTotal();
+        });
+      });
+      worksEdit.querySelectorAll('[data-rm]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          works.splice(Number(btn.dataset.rm), 1);
+          renderWorks(); updateWorksTotal();
+        });
+      });
+    }
+  };
+  const updateWorksTotal = () => {
+    const sum = works.reduce((s, w) => s + (Number(w.cost) || 0), 0);
+    worksTotalEl.textContent = fmtMoney(sum);
+  };
+  document.getElementById('works-add').addEventListener('click', () => {
+    works.push({ type: '', mechanic: '', cost: 0 });
+    renderWorks(); updateWorksTotal();
+    const inputs = worksEdit.querySelectorAll('.work-type-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+  renderWorks(); updateWorksTotal();
+
+  const renderParts = () => {
+    if (!parts.length) {
+      partsEdit.innerHTML = `<div class="works-edit-empty">Пока деталей нет — нажмите «+ Добавить деталь»</div>`;
+    } else {
+      partsEdit.innerHTML = parts.map((p, i) => `
+        <div class="parts-edit-row" data-i="${i}">
+          <input class="part-name-input" data-k="name" autocomplete="off" placeholder="Например, Колодки Akebono передние" value="${e(p.name)}">
+          <input class="part-cost-input work-cost-input" data-k="cost" type="number" min="0" step="0.01" placeholder="0" value="${p.cost || ''}">
+          <button type="button" class="work-remove" data-rm="${i}" aria-label="Удалить деталь" title="Удалить">×</button>
+        </div>
+      `).join('');
+      partsEdit.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          const row = inp.closest('.parts-edit-row');
+          const i = Number(row.dataset.i);
+          const k = inp.dataset.k;
+          parts[i][k] = (k === 'cost') ? (Number(inp.value) || 0) : inp.value;
+          if (k === 'cost') updatePartsTotal();
+        });
+      });
+      partsEdit.querySelectorAll('[data-rm]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          parts.splice(Number(btn.dataset.rm), 1);
+          renderParts(); updatePartsTotal();
+        });
+      });
+    }
+  };
+  const updatePartsTotal = () => {
+    const sum = parts.reduce((s, p) => s + (Number(p.cost) || 0), 0);
+    partsTotalEl.textContent = fmtMoney(sum);
+  };
+  document.getElementById('parts-add').addEventListener('click', () => {
+    parts.push({ name: '', cost: 0 });
+    renderParts(); updatePartsTotal();
+    const inputs = partsEdit.querySelectorAll('.part-name-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+  renderParts(); updatePartsTotal();
+
+  // Suggestions: load saved state once, then attach a custom dropdown
+  loadVisitSuggestionBase().catch(err => console.warn('Suggestion load failed:', err));
+
+  const dd = document.getElementById('suggest-dd');
+  let activeInput = null;
+  let activeIdx = -1;
+
+  function suggestionsFor(inp) {
+    const focusedRow = inp.closest('[data-i]');
+    const focusedI = focusedRow ? Number(focusedRow.dataset.i) : -1;
+    let saved, current;
+    if (inp.classList.contains('work-type-input')) {
+      saved = suggestState.workTypes;
+      current = works.filter((_, i) => i !== focusedI).map(w => w.type);
+    } else if (inp.classList.contains('work-mech-input')) {
+      saved = suggestState.mechanics;
+      current = works.filter((_, i) => i !== focusedI).map(w => w.mechanic);
+    } else if (inp.classList.contains('part-name-input')) {
+      saved = suggestState.partNames;
+      current = parts.filter((_, i) => i !== focusedI).map(p => p.name);
+    } else return [];
+    const set = new Set(saved);
+    current.forEach(v => { if (v && String(v).trim()) set.add(String(v).trim()); });
+    return [...set].filter(Boolean).sort((a, b) => a.localeCompare(b, 'ru'));
+  }
+
+  function highlightMatch(text, query) {
+    if (!query) return e(text);
+    const t = text.toLowerCase();
+    const q = query.toLowerCase();
+    const idx = t.indexOf(q);
+    if (idx < 0) return e(text);
+    return e(text.slice(0, idx)) + `<span class="match">${e(text.slice(idx, idx + query.length))}</span>` + e(text.slice(idx + query.length));
+  }
+
+  function showDropdown(inp) {
+    const value = inp.value.trim();
+    if (!value) { hideDropdown(); return; }
+    let items = suggestionsFor(inp);
+    const q = value.toLowerCase();
+    items = items.filter(s => s.toLowerCase().includes(q) && s.toLowerCase() !== q);
+    if (!items.length) { hideDropdown(); return; }
+    items = items.slice(0, 8);
+    dd.innerHTML = items.map((s, i) => `<div class="suggest-item${i === 0 ? ' is-active' : ''}" data-val="${e(s)}">${highlightMatch(s, value)}</div>`).join('');
+    const rect = inp.getBoundingClientRect();
+    dd.style.left = rect.left + 'px';
+    dd.style.top = (rect.bottom + 2) + 'px';
+    dd.style.width = rect.width + 'px';
+    dd.hidden = false;
+    activeInput = inp;
+    activeIdx = 0;
+  }
+
+  function hideDropdown() {
+    dd.hidden = true;
+    activeInput = null;
+    activeIdx = -1;
+  }
+
+  function selectSuggestion(value) {
+    if (!activeInput) return;
+    activeInput.value = value;
+    activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    hideDropdown();
+  }
+
+  dd.addEventListener('mousedown', (ev) => ev.preventDefault()); // keep input focus
+  dd.addEventListener('click', (ev) => {
+    const item = ev.target.closest('.suggest-item');
+    if (item) selectSuggestion(item.dataset.val);
+  });
+
+  const visitFormEl = document.getElementById('visit-form');
+  visitFormEl.addEventListener('input', (ev) => {
+    if (ev.target.matches('.work-type-input, .work-mech-input, .part-name-input')) {
+      showDropdown(ev.target);
+    }
+  });
+  visitFormEl.addEventListener('focusout', (ev) => {
+    if (ev.target.matches('.work-type-input, .work-mech-input, .part-name-input')) {
+      setTimeout(() => { if (document.activeElement !== ev.target) hideDropdown(); }, 100);
+    }
+  });
+  visitFormEl.addEventListener('keydown', (ev) => {
+    if (!activeInput || dd.hidden) return;
+    const items = dd.querySelectorAll('.suggest-item');
+    if (!items.length) return;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      activeIdx = (activeIdx + 1) % items.length;
+      items.forEach((it, i) => it.classList.toggle('is-active', i === activeIdx));
+      items[activeIdx].scrollIntoView({ block: 'nearest' });
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      activeIdx = (activeIdx - 1 + items.length) % items.length;
+      items.forEach((it, i) => it.classList.toggle('is-active', i === activeIdx));
+      items[activeIdx].scrollIntoView({ block: 'nearest' });
+    } else if (ev.key === 'Enter') {
+      ev.preventDefault();
+      if (items[activeIdx]) selectSuggestion(items[activeIdx].dataset.val);
+    } else if (ev.key === 'Escape') {
+      hideDropdown();
+    }
+  });
+  window.addEventListener('scroll', hideDropdown, true);
   const photoGrid = document.getElementById('photo-grid');
   const docList = document.getElementById('docs-edit-list');
   const photoStatus = document.getElementById('photo-status');
@@ -2308,13 +3252,20 @@ function bindVisitForm(v) {
   const setStatus = (el, msg) => { if (msg) { el.textContent = msg; el.hidden = false; } else { el.hidden = true; } };
 
   const renderPhotos = () => {
-    photoGrid.innerHTML = photos.map((p, i) => `
-      <div class="photo-edit${p.pendingId?' pending':''}" data-i="${i}">
-        <button type="button" class="photo-remove" data-rm="${i}" aria-label="Удалить">×</button>
-        <img src="${e(p.url || p.dataUrl)}" alt="" loading="lazy">
-        <textarea class="caption-input" data-cap="${i}" placeholder="Подпись…">${e(p.comment||'')}</textarea>
-      </div>
-    `).join('');
+    photoGrid.innerHTML = photos.map((p, i) => {
+      const isVideo = mediaKind(p) === 'video';
+      const src = p.url || p.dataUrl || '';
+      const media = isVideo
+        ? `<video src="${e(src)}" preload="metadata" muted playsinline controls></video>`
+        : `<img src="${e(src)}" alt="" loading="lazy">`;
+      return `
+        <div class="photo-edit${p.pendingId?' pending':''}${isVideo?' is-video':''}" data-i="${i}">
+          <button type="button" class="photo-remove" data-rm="${i}" aria-label="Удалить">×</button>
+          ${media}
+          <textarea class="caption-input" data-cap="${i}" placeholder="Подпись…">${e(p.comment||'')}</textarea>
+        </div>
+      `;
+    }).join('');
     photoGrid.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
       const idx = Number(b.dataset.rm);
       const removed = photos[idx];
@@ -2348,7 +3299,7 @@ function bindVisitForm(v) {
 
   const handlePhotos = async (files) => {
     if (!files.length) return;
-    setStatus(photoStatus, `Загрузка ${files.length} фото в облако…`);
+    setStatus(photoStatus, `Загрузка ${files.length} фото…`);
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       setStatus(photoStatus, `Загрузка ${i + 1} из ${files.length}…`);
@@ -2394,7 +3345,7 @@ function bindVisitForm(v) {
   });
   document.querySelector('label[for="photo-input"]').addEventListener('drop', async (ev) => {
     ev.preventDefault(); ev.currentTarget.style.borderColor = '';
-    const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+    const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
     await handlePhotos(files);
   });
   document.querySelector('label[for="doc-input"]').addEventListener('drop', async (ev) => {
@@ -2408,13 +3359,42 @@ function bindVisitForm(v) {
     const data = Object.fromEntries(new FormData(ev.target));
     data.card_id = v.card_id;
     if (data.mileage) data.mileage = Number(data.mileage); else delete data.mileage;
-    data.cost = Number(data.cost) || 0;
     data.prepayment = Number(data.prepayment) || 0;
     if (data.visit_date) data.visit_date = new Date(data.visit_date + 'T12:00:00').toISOString();
     data.photos = photos;
     data.documents = documents;
-    if (v.id) { await repo.put('visits', { ...v, ...data }); flash('Визит сохранён'); }
-    else      { await repo.add('visits', data); flash('Визит создан'); }
+    // Works: drop blank rows, normalize numbers
+    const cleanWorks = works
+      .map(w => ({ type: (w.type || '').trim(), mechanic: (w.mechanic || '').trim(), cost: Number(w.cost) || 0 }))
+      .filter(w => w.type || w.mechanic || w.cost > 0);
+    // Parts: drop blank rows
+    const cleanParts = parts
+      .map(p => ({ name: (p.name || '').trim(), cost: Number(p.cost) || 0 }))
+      .filter(p => p.name || p.cost > 0);
+    data.works = cleanWorks;
+    data.parts = cleanParts;
+    const wSum = cleanWorks.reduce((s, w) => s + w.cost, 0);
+    const pSum = cleanParts.reduce((s, p) => s + p.cost, 0);
+    data.cost = wSum + pSum;
+    // Delivery timestamp: set when transitioning to "delivered", clear when leaving
+    const wasDelivered = v.status === 'delivered';
+    const isDelivered  = data.status === 'delivered';
+    if (isDelivered && !wasDelivered) data.delivered_at = new Date().toISOString();
+    else if (isDelivered && wasDelivered) data.delivered_at = v.delivered_at || new Date().toISOString();
+    else data.delivered_at = null; // explicit null so merge clears it
+    // Drop legacy fields so they don't shadow the new model
+    delete data.work_done;
+    delete data.mechanic;
+    delete data.parts_to_order;
+    if (v.id) {
+      const merged = { ...v, ...data };
+      delete merged.work_done; delete merged.mechanic; delete merged.parts_to_order;
+      if (merged.delivered_at === null) delete merged.delivered_at;
+      await repo.put('visits', merged); flash('Визит сохранён');
+    } else {
+      if (data.delivered_at === null) delete data.delivered_at;
+      await repo.add('visits', data); flash('Визит создан');
+    }
     location.hash = '#/cards/' + v.card_id;
   });
 }
@@ -2427,49 +3407,49 @@ async function seedDemo() {
 
   const seed = [
     {
-      card: { surname: 'Иванов', first_name: 'Сергей Петрович', phone: '+7 (916) 234-56-78', plate: 'А 123 BC 77', make: 'Toyota', model: 'Camry', notes: 'VIN: JTNBE40K003456789. Постоянный клиент с 2023 года.' },
+      card: { surname: 'Иванов', first_name: 'Сергей Петрович', phone: '+7 (916) 234-56-78', plate: 'А123BC77', make: 'Toyota', model: 'Camry', year: 2018, vin: 'JTNBE40K003456789', notes: 'Постоянный клиент с 2023 года.' },
       visits: [
-        { daysAgo: 90, status: 'delivered', mileage: 78000, wishes: 'Плановое ТО на 75 000 км', work_done: 'Замена моторного масла, масляного фильтра, воздушного и салонного. Проверка тормозной системы.', parts_to_order: 'Mobil 1 5W-30 (4л); фильтр масляный; воздушный; салонный угольный', mechanic: 'Сергей', cost: 8400 },
-        { daysAgo: 30, status: 'delivered', mileage: 80500, wishes: 'Стук в передней подвеске при езде по неровностям', diagnostics: 'Износ передних сайлент-блоков с обеих сторон. Стойки стабилизатора в норме.', recommendations: 'В будущем посмотреть опорные подшипники', work_done: 'Замена сайлент-блоков передних рычагов (2 шт). Сход-развал.', parts_to_order: 'Сайлент-блок RBI ×2', mechanic: 'Сергей', cost: 12400, prepayment: 5000 },
-        { daysAgo: 1, status: 'in_progress', mileage: 81200, wishes: 'Скрип передних колодок при торможении', diagnostics: 'Передние колодки изношены, диски в пределах допуска.', parts_to_order: 'Колодки Akebono передние; смазка для направляющих', work_done: 'В процессе.', mechanic: 'Андрей', cost: 7200 },
+        { daysAgo: 90, status: 'delivered', mileage: 78000, wishes: 'Плановое ТО на 75 000 км', parts: [{ name: 'Mobil 1 5W-30, 4 л', cost: 2800 }, { name: 'Фильтр масляный', cost: 400 }, { name: 'Фильтр воздушный', cost: 600 }, { name: 'Фильтр салонный угольный', cost: 900 }], works: [{ type: 'Замена моторного масла и масляного фильтра', mechanic: 'Сергей', cost: 4200 }, { type: 'Замена воздушного и салонного фильтров', mechanic: 'Сергей', cost: 2400 }, { type: 'Проверка тормозной системы', mechanic: 'Сергей', cost: 1800 }], cost: 13100 },
+        { daysAgo: 30, status: 'delivered', mileage: 80500, wishes: 'Стук в передней подвеске при езде по неровностям', diagnostics: 'Износ передних сайлент-блоков с обеих сторон. Стойки стабилизатора в норме.', recommendations: 'В будущем посмотреть опорные подшипники', parts: [{ name: 'Сайлент-блок RBI ×2', cost: 1600 }], works: [{ type: 'Замена сайлент-блоков передних рычагов (2 шт)', mechanic: 'Сергей', cost: 8400 }, { type: 'Сход-развал', mechanic: 'Сергей', cost: 4000 }], cost: 14000, prepayment: 5000 },
+        { daysAgo: 1, status: 'in_progress', mileage: 81200, wishes: 'Скрип передних колодок при торможении', diagnostics: 'Передние колодки изношены, диски в пределах допуска.', parts: [{ name: 'Колодки Akebono передние', cost: 3500 }, { name: 'Смазка для направляющих', cost: 350 }], works: [{ type: 'Замена передних тормозных колодок', mechanic: 'Андрей', cost: 7200 }], cost: 11050 },
       ]
     },
     {
-      card: { surname: 'Петрова', first_name: 'Анна Викторовна', phone: '+7 (925) 876-54-32', plate: 'M 456 KP 197', make: 'Volkswagen', model: 'Polo', notes: 'Машина мужа, контактный телефон жены.' },
+      card: { surname: 'Петрова', first_name: 'Анна Викторовна', phone: '+7 (925) 876-54-32', plate: 'M456KP197', make: 'Volkswagen', model: 'Polo', year: 2019, vin: 'WVWZZZ6RZJU012345', notes: 'Машина мужа, контактный телефон жены.' },
       visits: [
-        { daysAgo: 180, status: 'delivered', mileage: 65300, wishes: 'Плановое ТО', work_done: 'Замена масла, фильтров. Проверка ходовой.', mechanic: 'Сергей', cost: 6900 },
-        { daysAgo: 0, status: 'ready', mileage: 71200, wishes: 'Замена ремня ГРМ по регламенту', diagnostics: 'Ремень и ролики в удовлетворительном состоянии, но пробег требует замены.', work_done: 'Замена ремня ГРМ, помпы, натяжителя. Замена антифриза.', parts_to_order: 'Комплект ГРМ Continental; помпа; антифриз G13 5л', mechanic: 'Андрей', cost: 18500, prepayment: 5000 },
+        { daysAgo: 180, status: 'delivered', mileage: 65300, wishes: 'Плановое ТО', works: [{ type: 'Замена масла и фильтров', mechanic: 'Сергей', cost: 4200 }, { type: 'Проверка ходовой', mechanic: 'Сергей', cost: 2700 }], cost: 6900 },
+        { daysAgo: 0, status: 'ready', mileage: 71200, wishes: 'Замена ремня ГРМ по регламенту', diagnostics: 'Ремень и ролики в удовлетворительном состоянии, но пробег требует замены.', parts: [{ name: 'Комплект ГРМ Continental', cost: 8500 }, { name: 'Помпа', cost: 4200 }, { name: 'Антифриз G13, 5 л', cost: 2400 }], works: [{ type: 'Замена ремня ГРМ, помпы и натяжителя', mechanic: 'Андрей', cost: 14500 }, { type: 'Замена антифриза', mechanic: 'Андрей', cost: 4000 }], cost: 33600, prepayment: 5000 },
       ]
     },
     {
-      card: { surname: 'Сидоров', first_name: 'Андрей', phone: '+7 (903) 111-22-33', plate: 'E 789 TT 50', make: 'Hyundai', model: 'Solaris', notes: '' },
+      card: { surname: 'Сидоров', first_name: 'Андрей', phone: '+7 (903) 111-22-33', plate: 'E789TT50', make: 'Hyundai', model: 'Solaris', year: 2020, vin: 'Z94CT41DAKR123456', notes: '' },
       visits: [
-        { daysAgo: 60, status: 'delivered', mileage: 92000, wishes: 'Не заводится утром', diagnostics: 'Аккумулятор не держит заряд. Генератор в норме.', work_done: 'Замена аккумулятора Varta 60Ah.', parts_to_order: 'АКБ Varta Blue 60Ah', mechanic: 'Сергей', cost: 8200 },
+        { daysAgo: 60, status: 'delivered', mileage: 92000, wishes: 'Не заводится утром', diagnostics: 'Аккумулятор не держит заряд. Генератор в норме.', parts: [{ name: 'АКБ Varta Blue 60Ah', cost: 7800 }], works: [{ type: 'Замена аккумулятора', mechanic: 'Сергей', cost: 1200 }], cost: 9000 },
       ]
     },
     {
-      card: { surname: 'Козлов', first_name: 'Михаил Сергеевич', phone: '+7 (909) 333-22-11', plate: 'K 234 OB 77', make: 'Lada', model: 'Vesta', notes: 'Гарантийная машина.' },
+      card: { surname: 'Козлов', first_name: 'Михаил Сергеевич', phone: '+7 (909) 333-22-11', plate: 'K234OB77', make: 'Lada', model: 'Vesta', year: 2022, vin: 'XTAGFL110LY234567', notes: 'Гарантийная машина.' },
       visits: [
-        { daysAgo: 1, status: 'in_progress', mileage: 23500, wishes: 'Не заводится — крутит, но не схватывает', diagnostics: 'Ожидается осмотр стартера и топливной системы.', work_done: 'Диагностика в процессе.', mechanic: 'Андрей', cost: 0 },
+        { daysAgo: 1, status: 'in_progress', mileage: 23500, wishes: 'Не заводится — крутит, но не схватывает', diagnostics: 'Ожидается осмотр стартера и топливной системы.', works: [{ type: 'Диагностика двигателя и топливной системы', mechanic: 'Андрей', cost: 0 }], cost: 0 },
       ]
     },
     {
-      card: { surname: 'Морозова', first_name: 'Екатерина Дмитриевна', phone: '+7 (916) 555-44-33', plate: 'B 555 KK 99', make: 'Kia', model: 'Rio', notes: '' },
+      card: { surname: 'Морозова', first_name: 'Екатерина Дмитриевна', phone: '+7 (916) 555-44-33', plate: 'B555KK99', make: 'Kia', model: 'Rio', year: 2021, vin: 'Z94CT51AAKR345678', notes: '' },
       visits: [
-        { daysAgo: 120, status: 'delivered', mileage: 145000, wishes: 'Пропадает сцепление', diagnostics: 'Износ диска сцепления, корзина в порядке.', work_done: 'Замена комплекта сцепления (диск, корзина, выжимной).', parts_to_order: 'Комплект сцепления LUK', mechanic: 'Сергей', cost: 24500, prepayment: 10000 },
+        { daysAgo: 120, status: 'delivered', mileage: 145000, wishes: 'Пропадает сцепление', diagnostics: 'Износ диска сцепления, корзина в порядке.', parts: [{ name: 'Комплект сцепления LUK', cost: 18500 }], works: [{ type: 'Замена комплекта сцепления (диск, корзина, выжимной)', mechanic: 'Сергей', cost: 24500 }], cost: 43000, prepayment: 10000 },
       ]
     },
     {
-      card: { surname: 'Николаев', first_name: 'Олег Иванович', phone: '+7 (985) 222-33-44', plate: 'A 777 PT 197', make: 'BMW', model: 'X5', notes: 'Премиум клиент. Платит без вопросов, любит подробности по работе.' },
+      card: { surname: 'Николаев', first_name: 'Олег Иванович', phone: '+7 (985) 222-33-44', plate: 'A777PT197', make: 'BMW', model: 'X5', year: 2017, vin: 'WBAFR9C50DD456789', notes: 'Премиум клиент. Платит без вопросов, любит подробности по работе.' },
       visits: [
-        { daysAgo: 240, status: 'delivered', mileage: 145000, wishes: 'Скрип тормозов, проверить тормозную систему полностью', diagnostics: 'Износ колодок и дисков на всех осях. Тормозная жидкость требует замены.', work_done: 'Замена тормозных колодок (4 оси) и дисков (4 оси). Прокачка тормозов, замена ТЖ.', parts_to_order: 'Колодки Akebono ×2 комплекта; диски Brembo ×4; ТЖ DOT4 1л ×2', mechanic: 'Сергей', cost: 56000, prepayment: 20000 },
-        { daysAgo: 60, status: 'delivered', mileage: 152000, wishes: 'Стуки на неровностях', diagnostics: 'Износ амортизаторов спереди и сзади.', work_done: 'Замена амортизаторов (4 шт), пыльников. Сход-развал.', parts_to_order: 'Амортизаторы Bilstein B6 ×4', mechanic: 'Сергей', cost: 34000, prepayment: 15000 },
+        { daysAgo: 240, status: 'delivered', mileage: 145000, wishes: 'Скрип тормозов, проверить тормозную систему полностью', diagnostics: 'Износ колодок и дисков на всех осях. Тормозная жидкость требует замены.', parts: [{ name: 'Колодки Akebono ×2 комплекта', cost: 7000 }, { name: 'Диски Brembo ×4', cost: 22000 }, { name: 'ТЖ DOT4 1 л ×2', cost: 1400 }], works: [{ type: 'Замена тормозных колодок (4 оси)', mechanic: 'Сергей', cost: 18000 }, { type: 'Замена тормозных дисков (4 оси)', mechanic: 'Сергей', cost: 32000 }, { type: 'Прокачка тормозов и замена тормозной жидкости', mechanic: 'Сергей', cost: 6000 }], cost: 86400, prepayment: 20000 },
+        { daysAgo: 60, status: 'delivered', mileage: 152000, wishes: 'Стуки на неровностях', diagnostics: 'Износ амортизаторов спереди и сзади.', parts: [{ name: 'Амортизаторы Bilstein B6 ×4', cost: 18000 }], works: [{ type: 'Замена амортизаторов (4 шт) и пыльников', mechanic: 'Сергей', cost: 28000 }, { type: 'Сход-развал', mechanic: 'Сергей', cost: 6000 }], cost: 52000, prepayment: 15000 },
       ]
     },
     {
-      card: { surname: 'Фёдорова', first_name: 'Мария', phone: '+7 (906) 444-55-66', plate: 'H 333 CC 77', make: 'Ford', model: 'Focus', notes: '' },
+      card: { surname: 'Фёдорова', first_name: 'Мария', phone: '+7 (906) 444-55-66', plate: 'H333CC77', make: 'Ford', model: 'Focus', year: 2016, vin: 'X9FDXXEEDDFE56789', notes: '' },
       visits: [
-        { daysAgo: 35, status: 'delivered', mileage: 88000, wishes: 'Свист под капотом при запуске', diagnostics: 'Износ ремня генератора и натяжителя.', work_done: 'Замена ремня генератора с натяжителем.', parts_to_order: 'Ремень Gates; натяжитель INA', mechanic: 'Андрей', cost: 5400 },
+        { daysAgo: 35, status: 'delivered', mileage: 88000, wishes: 'Свист под капотом при запуске', diagnostics: 'Износ ремня генератора и натяжителя.', parts: [{ name: 'Ремень Gates', cost: 1200 }, { name: 'Натяжитель INA', cost: 2800 }], works: [{ type: 'Замена ремня генератора с натяжителем', mechanic: 'Андрей', cost: 5400 }], cost: 9400 },
       ]
     },
   ];
@@ -2544,53 +3524,58 @@ async function maybeAutoSeed() {
   if (localStorage.getItem('garage_local_seeded')) return;
   const cards = await repo.list('cards');
   if (cards.length > 0) { localStorage.setItem('garage_local_seeded', '1'); return; }
+  // No data and no seed flag → first-time user who didn't come through
+  // install.html (which would have populated IDB from the live data).
+  // Fall back to the synthetic demo so the app isn't empty.
   await seedDemo();
   localStorage.setItem('garage_local_seeded', '1');
 }
 
 // ═══ Backup / Restore / Reseed ════════════════════════
-function _blobToBase64(blob) {
-  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
-}
-function _base64ToBlob(dataUrl) {
-  const [head, body] = dataUrl.split(',');
-  const type = (head.match(/data:([^;]+)/) || [,'application/octet-stream'])[1];
-  const bin = atob(body);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return new Blob([arr], { type });
-}
-
 document.getElementById('backup').addEventListener('click', async (ev) => {
   ev.preventDefault();
   flash('Готовлю бэкап…');
-  const cards  = await repo.list('cards');
-  const visits = await repo.list('visits');
-  // Strip transient blob: URLs from visits before serialization.
-  const cleanVisits = visits.map(v => ({
-    ...v,
-    photos:    (v.photos    || []).map(p => { const c = { ...p }; if (typeof c.url === 'string' && c.url.startsWith('blob:')) delete c.url; return c; }),
-    documents: (v.documents || []).map(d => { const c = { ...d }; if (typeof c.url === 'string' && c.url.startsWith('blob:')) delete c.url; return c; }),
-  }));
-  // Collect referenced blobs and serialize as base64
+  // Use raw IDB reads (no _resolveBlobUrls) so we don't waste cycles building
+  // throwaway URLs the moment before we strip them out anyway.
+  const cards  = await txReq('cards',  'readonly', s => s.getAll());
+  const visits = await txReq('visits', 'readonly', s => s.getAll());
+
+  // Walk every photo + document, gather referenced blobIds, serialize each blob once.
   const blobIds = new Set();
-  for (const v of cleanVisits) {
-    for (const p of (v.photos    || [])) if (p.blobId != null) blobIds.add(Number(p.blobId));
-    for (const d of (v.documents || [])) if (d.blobId != null) blobIds.add(Number(d.blobId));
+  for (const v of visits) for (const k of ['photos', 'documents']) {
+    if (Array.isArray(v[k])) for (const item of v[k]) if (item.blobId) blobIds.add(Number(item.blobId));
   }
-  const blobs = {};
+  const blobs = [];
   for (const id of blobIds) {
     const rec = await getBlobRec(id);
-    if (rec && rec.blob) blobs[id] = { name: rec.name, type: rec.type, kind: rec.kind, data: await _blobToBase64(rec.blob) };
+    if (!rec || !rec.blob) continue;
+    blobs.push({
+      id,
+      kind: rec.kind,
+      name: rec.name,
+      type: rec.type,
+      bytes: rec.bytes,
+      created_at: rec.created_at,
+      dataUrl: await _blobToDataUrl(rec.blob),
+    });
   }
-  const data = { version: 2, schema: 'cards/visits/blobs', exported_at: new Date().toISOString(), cards, visits: cleanVisits, blobs };
+
+  const data = {
+    version: 2,
+    schema: 'cards/visits/blobs',
+    exported_at: new Date().toISOString(),
+    cards,
+    visits: visits.map(_stripBlobUrls),
+    blobs,
+  };
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `kartoteka-local-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `kartoteka-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
-  flash(`Бэкап сохранён · ${Object.keys(blobs).length} файл${Object.keys(blobs).length === 1 ? '' : 'ов'}`);
+  const mb = (blob.size / 1024 / 1024).toFixed(1);
+  flash(`Бэкап сохранён (${mb} МБ)`);
 });
 
 document.getElementById('restore').addEventListener('click', (ev) => { ev.preventDefault(); document.getElementById('restore-input').click(); });
@@ -2599,37 +3584,32 @@ document.getElementById('restore-input').addEventListener('change', async (ev) =
   if (!file) return;
   if (!confirm('ВНИМАНИЕ: восстановление перезапишет все текущие данные. Продолжить?')) { ev.target.value = ''; return; }
   try {
-    flash('Восстанавливаю…');
     const data = JSON.parse(await file.text());
-    if (!data.schema || !data.schema.startsWith('cards/visits')) {
-      if (!confirm('Файл другого формата. Импортировать всё равно?')) return;
-    }
-    // Wipe everything
-    await Promise.all(['cards','visits','blobs'].map(s => txReq(s, 'readwrite', st => st.clear())));
+    const schemaOk = data.schema === 'cards/visits' || data.schema === 'cards/visits/blobs';
+    if (!schemaOk) { if (!confirm('Файл другого формата. Импортировать всё равно?')) return; }
+    // Drop URL cache so stale blob: URLs from previous data don't survive.
+    for (const url of _urlCache.values()) URL.revokeObjectURL(url);
     _urlCache.clear();
-    // Restore blobs first, building old-id → new-id map
-    const idMap = new Map();
-    if (data.blobs && typeof data.blobs === 'object') {
-      for (const [oldId, rec] of Object.entries(data.blobs)) {
-        if (!rec || !rec.data) continue;
-        const blob = _base64ToBlob(rec.data);
-        const newId = await saveBlob(blob, { kind: rec.kind, name: rec.name, type: rec.type, bytes: blob.size });
-        idMap.set(Number(oldId), newId);
-      }
+    // Wipe all three stores directly so we don't trigger repo.clear's blob-deletion walk
+    // (we're about to overwrite the whole DB anyway).
+    await Promise.all(['cards', 'visits', 'blobs'].map(s => txReq(s, 'readwrite', x => x.clear())));
+    // Restore blobs first, preserving original ids (blobs store uses autoIncrement
+    // but accepts explicit keys via `put`) so visit refs still resolve.
+    for (const b of data.blobs || []) {
+      if (!b.dataUrl) continue;
+      const blob = await _dataUrlToBlob(b.dataUrl);
+      await txReq('blobs', 'readwrite', s => s.put({
+        id: b.id,
+        blob,
+        kind: b.kind,
+        name: b.name,
+        type: b.type,
+        bytes: b.bytes,
+        created_at: b.created_at || Date.now(),
+      }));
     }
-    // Restore cards
-    for (const c of data.cards  || []) await txReq('cards', 'readwrite', s => s.put(c));
-    // Restore visits, remapping blobIds
-    for (const v of data.visits || []) {
-      const remapped = { ...v,
-        photos:    (v.photos    || []).map(p => p.blobId != null && idMap.has(Number(p.blobId)) ? { ...p, blobId: idMap.get(Number(p.blobId)) } : p),
-        documents: (v.documents || []).map(d => d.blobId != null && idMap.has(Number(d.blobId)) ? { ...d, blobId: idMap.get(Number(d.blobId)) } : d),
-      };
-      // Strip transient blob URLs just in case
-      remapped.photos    = remapped.photos.map(p    => { const c = { ...p }; if (typeof c.url === 'string' && c.url.startsWith('blob:')) delete c.url; return c; });
-      remapped.documents = remapped.documents.map(d => { const c = { ...d }; if (typeof c.url === 'string' && c.url.startsWith('blob:')) delete c.url; return c; });
-      await txReq('visits', 'readwrite', s => s.put(remapped));
-    }
+    for (const c of data.cards  || []) await repo.put('cards',  c);
+    for (const v of data.visits || []) await repo.put('visits', v);
     flash('Восстановлено');
     setTimeout(() => location.reload(), 600);
   } catch (err) { alert('Ошибка: ' + err.message); }
@@ -2647,10 +3627,44 @@ document.getElementById('clear-demo').addEventListener('click', async (ev) => {
   }
 });
 
+// ═══ One-shot card migrations ═════════════════════════
+// Normalizes plates (strips spaces) for ALL cards and backfills `year` for
+// known demo cards by surname+make match. Safe to ship — uses a localStorage
+// flag so it runs at most once per browser. Bump the flag name to re-run.
+async function migrateCardsOnce() {
+  const FLAG = 'garage_migrate_plate_year_v1';
+  if (localStorage.getItem(FLAG)) return;
+  const demoYears = {
+    'Иванов|Toyota': 2018,
+    'Петрова|Volkswagen': 2019,
+    'Сидоров|Hyundai': 2020,
+    'Козлов|Lada': 2022,
+    'Морозова|Kia': 2021,
+    'Николаев|BMW': 2017,
+    'Фёдорова|Ford': 2016,
+  };
+  const cards = await repo.list('cards');
+  let updated = 0;
+  for (const c of cards) {
+    let dirty = false;
+    const next = { ...c };
+    if (c.plate) {
+      const n = normalizePlate(c.plate);
+      if (n !== c.plate) { next.plate = n; dirty = true; }
+    }
+    const key = `${c.surname}|${c.make}`;
+    if (demoYears[key] && !c.year) { next.year = demoYears[key]; dirty = true; }
+    if (dirty) { await repo.put('cards', next); updated++; }
+  }
+  localStorage.setItem(FLAG, '1');
+  if (updated > 0) console.log(`migrateCardsOnce: updated ${updated} card(s)`);
+}
+
 // ═══ Boot ═════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
   await maybeShowBirthday();
   try { await maybeAutoSeed(); } catch (err) { console.error('Auto-seed failed:', err); }
+  try { await migrateCardsOnce(); } catch (err) { console.error('Migration failed:', err); }
   if (!location.hash) location.hash = '#/'; else dispatch();
   // Try to flush any queued offline uploads after the app is up
   setTimeout(() => processPendingUploads(true).catch(() => {}), 2500);

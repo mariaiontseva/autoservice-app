@@ -1,6 +1,6 @@
 // Service Worker for the LOCAL-ONLY version.
 // Bump CACHE_VERSION on each release to trigger cache refresh on clients.
-const CACHE_VERSION = 'local-v1';
+const CACHE_VERSION = 'local-v2';
 const CACHE = `autoservice-local-${CACHE_VERSION}`;
 
 const APP_SHELL = [
