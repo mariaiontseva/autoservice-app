@@ -161,6 +161,41 @@
   const summaryEl    = document.getElementById('summary');
   const helpEl       = document.getElementById('help');
 
+  // Capture the PWA install prompt as early as possible. Chromium fires it once
+  // the page meets install criteria (HTTPS + manifest + SW + engagement), then
+  // we trigger it from inside the click handler so the OS install dialog opens
+  // as part of the same "one button" flow the user expects.
+  let deferredInstallPrompt = null;
+  let pwaInstalled = false;
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    deferredInstallPrompt = ev;
+  });
+  window.addEventListener('appinstalled', () => { pwaInstalled = true; });
+
+  // Show platform-appropriate manual install instructions when the browser
+  // didn't surface a programmatic prompt (Safari, Firefox, or a Chromium that
+  // already silently dismissed earlier prompts).
+  function manualInstallHelp() {
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua)) {
+      return 'Safari на iPhone/iPad: нажмите кнопку «Поделиться» (квадратик со стрелкой) → «На экран „Домой“».';
+    }
+    if (/Android/.test(ua) && /Chrome/.test(ua)) {
+      return 'Chrome на Android: меню (три точки) → «Установить приложение».';
+    }
+    if (/Edg\//.test(ua)) {
+      return 'Edge: меню (три точки) → «Приложения» → «Установить этот сайт как приложение».';
+    }
+    if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
+      return 'Safari на Mac: меню «Файл» → «Добавить в Dock».';
+    }
+    if (/Firefox/.test(ua)) {
+      return 'Firefox не поддерживает установку приложением — используйте Chrome или Edge, либо просто оставьте вкладку в закладках.';
+    }
+    return 'Меню браузера (три точки) → «Установить «Автосервис local»».';
+  }
+
   function setStatus(step, msg, cls = '') {
     statusEl.innerHTML = `
       ${step ? `<div class="status-step">${step}</div>` : ''}
@@ -369,9 +404,45 @@
         Медиа: <span class="n">${blobs.length}</span> файл${blobs.length === 1 ? '' : 'ов'} · <span class="n">${fmtBytes(mediaBytes)}</span>
       `;
       summaryEl.hidden = false;
-      setStatus('Готово', 'Открываю приложение…', 'ok');
 
-      setTimeout(() => location.replace('./'), 1200);
+      // 7. Now that the SW is registered and engagement is real, ask Chromium
+      //    to actually install the PWA so the user gets an icon in dock/menu.
+      //    Give the event a beat to fire (it usually arrives during SW registration).
+      setStatus('Шаг 4 из 4', 'Ставлю иконкой на рабочий стол…');
+      if (!deferredInstallPrompt) {
+        await new Promise(r => setTimeout(r, 600));
+      }
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          if (choice.outcome === 'accepted') {
+            setStatus('Готово', 'Установлено! Ищите иконку «Автосервис» на рабочем столе или в Dock — открывайте приложение оттуда.', 'ok');
+            helpEl.hidden = true;
+            installBtn.hidden = true;
+            openBtn.hidden = false;
+            openBtn.textContent = 'Открыть приложение сейчас';
+            return; // don't auto-redirect; let the user click into the installed window
+          }
+          // dismissed → fall through to manual instructions + browser-tab fallback
+        } catch (err) {
+          console.warn('install prompt failed:', err);
+        }
+      }
+      // Either no programmatic prompt was offered, or the user dismissed it.
+      // Show the platform-specific manual recipe and offer to open the app in
+      // the current tab anyway — the data is local either way.
+      helpEl.innerHTML = `
+        <b>Как поставить иконкой на рабочий стол:</b><br>
+        ${manualInstallHelp()}<br><br>
+        База уже у вас на компьютере — приложение работает без интернета. Иконка добавляется отдельно через меню браузера.
+      `;
+      helpEl.hidden = false;
+      installBtn.hidden = true;
+      openBtn.hidden = false;
+      openBtn.textContent = 'Открыть приложение';
+      setStatus('Готово', 'База перенесена. Жмите «Открыть приложение» или поставьте иконкой по инструкции ниже.', 'ok');
     } catch (err) {
       console.error(err);
       setStatus('Ошибка', err.message || String(err), 'err');
