@@ -334,15 +334,21 @@
         try {
           const r = await fetch(url);
           if (!r.ok) throw new Error('HTTP ' + r.status);
+          // Store as ArrayBuffer + type, not as a raw Blob: several browsers
+          // throw "Error preparing Blob/File data to be stored in object store"
+          // when structured-cloning Blobs that came from cross-origin fetch,
+          // but ArrayBuffers go through structured clone reliably. /local/
+          // reconstructs the Blob with new Blob([data], { type }) on read.
           const blob = await r.blob();
+          const data = await blob.arrayBuffer();
           const id = nextBlobId++;
           urlToBlobId.set(url, id);
           blobs.push({
             id,
-            blob,
+            data,
             kind: meta.kind,
             name: meta.name,
-            type: blob.type || meta.type,
+            type: blob.type || meta.type || '',
             bytes: blob.size,
             created_at: Date.now(),
           });

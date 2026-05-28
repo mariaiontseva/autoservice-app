@@ -1820,13 +1820,31 @@ function txReq(storeName, mode, fn) {
 }
 
 // ═══ Blob storage (photos + videos + documents) ═══════
-// In offline mode every media file lives as a Blob in the `blobs` store.
-// Visit docs only reference items by `blobId`; we resolve to a transient
-// `blob:` URL on each load via URL.createObjectURL, cached per id.
+// Media files are stored as `{ data: ArrayBuffer, type: string, ... }` in the
+// `blobs` store. Several browsers throw "Error preparing Blob/File data to be
+// stored in object store" when structured-cloning a raw Blob into IDB
+// (especially Blobs that came from a cross-origin fetch). ArrayBuffer goes
+// through structured clone reliably, so we serialize to ArrayBuffer on write
+// and reconstruct a Blob on read via URL.createObjectURL.
+// Old records with `{ blob: Blob }` are still readable — `_recToBlob`
+// transparently handles both shapes.
 const _urlCache = new Map();
 
+function _recToBlob(rec) {
+  if (!rec) return null;
+  if (rec.blob instanceof Blob) return rec.blob;
+  if (rec.data) return new Blob([rec.data], { type: rec.type || '' });
+  return null;
+}
+
 async function saveBlob(blob, meta = {}) {
-  return txReq('blobs', 'readwrite', s => s.add({ blob, ...meta, created_at: Date.now() }));
+  const data = await blob.arrayBuffer();
+  return txReq('blobs', 'readwrite', s => s.add({
+    data,
+    type: blob.type || meta.type || '',
+    ...meta,
+    created_at: Date.now(),
+  }));
 }
 
 async function getBlobRec(id) {
@@ -1842,8 +1860,9 @@ async function blobUrl(blobId) {
   const key = Number(blobId);
   if (_urlCache.has(key)) return _urlCache.get(key);
   const rec = await getBlobRec(key);
-  if (!rec || !rec.blob) return '';
-  const url = URL.createObjectURL(rec.blob);
+  const blob = _recToBlob(rec);
+  if (!blob) return '';
+  const url = URL.createObjectURL(blob);
   _urlCache.set(key, url);
   return url;
 }
@@ -3548,7 +3567,8 @@ document.getElementById('backup').addEventListener('click', async (ev) => {
   const blobs = [];
   for (const id of blobIds) {
     const rec = await getBlobRec(id);
-    if (!rec || !rec.blob) continue;
+    const blob = _recToBlob(rec);
+    if (!blob) continue;
     blobs.push({
       id,
       kind: rec.kind,
@@ -3556,7 +3576,7 @@ document.getElementById('backup').addEventListener('click', async (ev) => {
       type: rec.type,
       bytes: rec.bytes,
       created_at: rec.created_at,
-      dataUrl: await _blobToDataUrl(rec.blob),
+      dataUrl: await _blobToDataUrl(blob),
     });
   }
 
@@ -3598,9 +3618,10 @@ document.getElementById('restore-input').addEventListener('change', async (ev) =
     for (const b of data.blobs || []) {
       if (!b.dataUrl) continue;
       const blob = await _dataUrlToBlob(b.dataUrl);
+      const data_buf = await blob.arrayBuffer();
       await txReq('blobs', 'readwrite', s => s.put({
         id: b.id,
-        blob,
+        data: data_buf,
         kind: b.kind,
         name: b.name,
         type: b.type,
