@@ -3543,9 +3543,39 @@ async function maybeAutoSeed() {
   if (localStorage.getItem('garage_local_seeded')) return;
   const cards = await repo.list('cards');
   if (cards.length > 0) { localStorage.setItem('garage_local_seeded', '1'); return; }
-  // No data and no seed flag → first-time user who didn't come through
-  // install.html (which would have populated IDB from the live data).
-  // Fall back to the synthetic demo so the app isn't empty.
+  // If this HTML was built by install.html as a single-file bundle, the live
+  // data is embedded as window.__SEED__ in a script tag right before us.
+  // Import it on first launch so the user sees their real database
+  // immediately, with no network roundtrip — the whole point of the
+  // download-and-run-from-disk path.
+  if (window.__SEED__ && typeof window.__SEED__ === 'object') {
+    const seed = window.__SEED__;
+    try {
+      for (const b of seed.blobs || []) {
+        if (!b.dataUrl) continue;
+        const blob = await _dataUrlToBlob(b.dataUrl);
+        const buf = await blob.arrayBuffer();
+        await txReq('blobs', 'readwrite', s => s.put({
+          id: b.id, data: buf,
+          kind: b.kind, name: b.name, type: b.type, bytes: b.bytes,
+          created_at: b.created_at || Date.now(),
+        }));
+      }
+      for (const c of seed.cards  || []) await repo.put('cards',  c);
+      for (const v of seed.visits || []) await repo.put('visits', v);
+      localStorage.setItem('garage_local_seeded', '1');
+      // Free up the inline payload — it's ~50KB to many MB of base64 we no
+      // longer need in memory after the IDB write.
+      delete window.__SEED__;
+      return;
+    } catch (err) {
+      console.error('embedded seed import failed:', err);
+      // Fall through to demo so the app is at least usable
+    }
+  }
+  // No data, no embedded seed, no flag → first-time user who didn't go
+  // through install.html. Fall back to the synthetic demo so the app
+  // isn't empty.
   await seedDemo();
   localStorage.setItem('garage_local_seeded', '1');
 }

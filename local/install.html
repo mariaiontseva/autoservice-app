@@ -133,19 +133,18 @@
 <div class="card">
   <img src="icon.svg" alt="" class="logo">
   <h1>Автосервис</h1>
-  <p class="lead">Сейчас перенесём всю вашу базу — клиентов, визиты, фото и документы — на этот компьютер.<br>После этого приложение работает без интернета.</p>
+  <p class="lead">Сейчас соберём приложение в один файл со всей вашей текущей базой внутри. Скачается на ваш компьютер — кладите куда удобно, открывайте двойным кликом.</p>
 
-  <button class="btn" id="install-btn">Установить локально</button>
-  <button class="btn btn-secondary" id="open-btn" hidden>Открыть приложение</button>
+  <button class="btn" id="install-btn">Скачать локальную версию</button>
+  <button class="btn btn-secondary" id="open-btn" hidden>Скачать ещё раз</button>
 
   <div class="status" id="status"></div>
   <div class="progress" id="progress" hidden><div class="progress-bar" id="progress-bar"></div></div>
   <div class="summary" id="summary" hidden></div>
 
   <div class="help" id="help" hidden>
-    <b>Чтобы поставить иконкой на рабочий стол:</b>
-    откройте меню браузера (три точки) → «Установить «Автосервис local»».
-    Тогда приложение будет открываться отдельным окном.
+    <b>Как пользоваться скачанным файлом:</b>
+    найдите <code>autoservice.html</code> в папке «Загрузки», перенесите на рабочий стол. Двойной клик — приложение открывается в браузере с локальным адресом <code>file:///…</code>. Всё работает без интернета, данные хранятся в этом файле и в браузере.
   </div>
 </div>
 
@@ -160,41 +159,6 @@
   const progressBar  = document.getElementById('progress-bar');
   const summaryEl    = document.getElementById('summary');
   const helpEl       = document.getElementById('help');
-
-  // Capture the PWA install prompt as early as possible. Chromium fires it once
-  // the page meets install criteria (HTTPS + manifest + SW + engagement), then
-  // we trigger it from inside the click handler so the OS install dialog opens
-  // as part of the same "one button" flow the user expects.
-  let deferredInstallPrompt = null;
-  let pwaInstalled = false;
-  window.addEventListener('beforeinstallprompt', (ev) => {
-    ev.preventDefault();
-    deferredInstallPrompt = ev;
-  });
-  window.addEventListener('appinstalled', () => { pwaInstalled = true; });
-
-  // Show platform-appropriate manual install instructions when the browser
-  // didn't surface a programmatic prompt (Safari, Firefox, or a Chromium that
-  // already silently dismissed earlier prompts).
-  function manualInstallHelp() {
-    const ua = navigator.userAgent;
-    if (/iPhone|iPad|iPod/.test(ua)) {
-      return 'Safari на iPhone/iPad: нажмите кнопку «Поделиться» (квадратик со стрелкой) → «На экран „Домой“».';
-    }
-    if (/Android/.test(ua) && /Chrome/.test(ua)) {
-      return 'Chrome на Android: меню (три точки) → «Установить приложение».';
-    }
-    if (/Edg\//.test(ua)) {
-      return 'Edge: меню (три точки) → «Приложения» → «Установить этот сайт как приложение».';
-    }
-    if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
-      return 'Safari на Mac: меню «Файл» → «Добавить в Dock».';
-    }
-    if (/Firefox/.test(ua)) {
-      return 'Firefox не поддерживает установку приложением — используйте Chrome или Edge, либо просто оставьте вкладку в закладках.';
-    }
-    return 'Меню браузера (три точки) → «Установить «Автосервис local»».';
-  }
 
   function setStatus(step, msg, cls = '') {
     statusEl.innerHTML = `
@@ -243,44 +207,8 @@
     return all;
   }
 
-  // ═══ Local IDB (same schema as /local/index.html) ═════
-  const DB_NAME = 'autoservice_local';
-  function openLocalDB() {
-    return new Promise((res, rej) => {
-      const req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = (ev) => {
-        const db = ev.target.result;
-        if (!db.objectStoreNames.contains('cards'))  db.createObjectStore('cards',  { keyPath: 'id' });
-        if (!db.objectStoreNames.contains('visits')) db.createObjectStore('visits', { keyPath: 'id' });
-        if (!db.objectStoreNames.contains('blobs'))  db.createObjectStore('blobs',  { keyPath: 'id', autoIncrement: true });
-      };
-      req.onsuccess = () => res(req.result);
-      req.onerror   = () => rej(req.error);
-    });
-  }
-  function txReq(db, storeName, mode, fn) {
-    return new Promise((res, rej) => {
-      const r = fn(db.transaction(storeName, mode).objectStore(storeName));
-      r.onsuccess = () => res(r.result);
-      r.onerror   = () => rej(r.error);
-    });
-  }
-
-  // ═══ Already-installed check ══════════════════════════
-  async function existingCount() {
-    try {
-      const db = await openLocalDB();
-      const cards  = await txReq(db, 'cards',  'readonly', s => s.count());
-      const visits = await txReq(db, 'visits', 'readonly', s => s.count());
-      return cards + visits;
-    } catch { return 0; }
-  }
-  if (localStorage.getItem('garage_local_seeded') && await existingCount() > 0) {
-    installBtn.textContent = 'Переустановить (заменит локальную копию)';
-    openBtn.hidden = false;
-    setStatus('', 'Локальная копия уже установлена на этом устройстве.');
-  }
-  openBtn.addEventListener('click', () => location.replace('./'));
+  // Re-download just retriggers the same flow.
+  openBtn.addEventListener('click', () => installBtn.click());
 
   // ═══ Install action ═══════════════════════════════════
   installBtn.addEventListener('click', async () => {
@@ -378,77 +306,102 @@
         }
       }
 
-      // 5. Write everything into the local IDB. Wipe stores first so a re-install
-      //    doesn't pile up duplicates or orphan blobs.
-      setStatus('Шаг 3 из 4', 'Сохраняю всё локально…');
-      setProgress(85);
-      const db = await openLocalDB();
-      await Promise.all(['cards', 'visits', 'blobs'].map(s =>
-        txReq(db, s, 'readwrite', x => x.clear())
-      ));
-      for (const b of blobs) {
-        await txReq(db, 'blobs', 'readwrite', s => s.put(b));
-      }
-      for (const c of cards)  await txReq(db, 'cards',  'readwrite', s => s.put(c));
-      for (const v of visits) await txReq(db, 'visits', 'readwrite', s => s.put(v));
-      localStorage.setItem('garage_local_seeded', '1');
+      // 5. Convert every blob's ArrayBuffer to base64 data URL — we need
+      //    string-form for embedding into the downloaded HTML's JS payload.
+      setStatus('Шаг 3 из 4', 'Упаковываю медиа в файл…');
+      setProgress(70);
+      const arrayBufferToBase64 = (buf) => {
+        let binary = '';
+        const bytes = new Uint8Array(buf);
+        const chunk = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunk) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+        }
+        return btoa(binary);
+      };
+      const seedBlobs = blobs.map(b => ({
+        id: b.id,
+        kind: b.kind,
+        name: b.name,
+        type: b.type,
+        bytes: b.bytes,
+        created_at: b.created_at,
+        dataUrl: `data:${b.type || 'application/octet-stream'};base64,` + arrayBufferToBase64(b.data),
+      }));
+      setProgress(80);
 
-      // 6. Register the local PWA's service worker so the app shell caches
-      //    on this device — this is what makes future loads work without network.
-      setStatus('Шаг 4 из 4', 'Регистрирую офлайн-режим…');
-      setProgress(95);
-      if ('serviceWorker' in navigator) {
-        try { await navigator.serviceWorker.register('./sw.js'); } catch {}
-      }
+      // 6. Pull the app template and the confetti UMD bundle so the downloaded
+      //    file runs without ever needing the network again. The template is
+      //    /local/index.html — the same offline build the cloud-hosted /local/
+      //    route already serves; we just inline it instead of fetching it.
+      setStatus('Шаг 4 из 4', 'Собираю готовое приложение…');
+      const [templateResp, confettiResp] = await Promise.all([
+        fetch('./index.html', { cache: 'no-store' }),
+        fetch('https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js'),
+      ]);
+      if (!templateResp.ok) throw new Error('Не удалось получить шаблон приложения');
+      if (!confettiResp.ok) throw new Error('Не удалось получить библиотеку confetti');
+      let html      = await templateResp.text();
+      const confettiSrc = await confettiResp.text();
+      setProgress(90);
+
+      // Build the embedded seed payload. JSON.stringify output is safe
+      // inside a script tag as long as we defang any literal closing-tag
+      // sequence (e.g. inside someone's "notes" field) so the HTML parser
+      // doesn't terminate the inline script early.
+      const seedJson = JSON.stringify({
+        version: 2,
+        schema: 'cards/visits/blobs',
+        exported_at: new Date().toISOString(),
+        cards,
+        visits,
+        blobs: seedBlobs,
+      }).replace(/<\/(script)/gi, '<\\/$1');
+
+      // Inject confetti as a regular (non-module) <script> in <head> so it
+      // attaches itself to `window.confetti`, then rewrite the ES-module
+      // dynamic import inside the main script to just use that global.
+      const confettiTag = `<script>${confettiSrc}\n//# autoservice-confetti\n<\/script>`;
+      html = html.replace('</head>', confettiTag + '\n</head>');
+      html = html.replace(
+        /import\s+confetti\s+from\s+["']https:\/\/cdn\.jsdelivr\.net\/npm\/canvas-confetti[^"']*["'];?/,
+        'const confetti = (typeof window !== "undefined" && window.confetti) || (() => {});'
+      );
+
+      // Inject window.__SEED__ right before the main module script so
+      // /local/index.html's maybeAutoSeed picks it up on first launch.
+      const seedTag = `<script>window.__SEED__ = ${seedJson};<\/script>`;
+      html = html.replace('<script type="module">', seedTag + '\n<script type="module">');
+
+      // The downloaded file lives at file:// — strip the manifest link
+      // (PWA install isn't possible from file://) and the SW registration
+      // try block (it would 404 silently anyway, but cleaner to remove).
+      html = html.replace(/<link\s+rel="manifest"[^>]*>\s*/i, '');
+
+      setProgress(98);
+
+      // 7. Trigger download.
+      const fileBlob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const dlUrl = URL.createObjectURL(fileBlob);
+      const a = document.createElement('a');
+      a.href = dlUrl;
+      a.download = 'autoservice.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(dlUrl), 60000);
       setProgress(100);
 
       const mediaBytes = blobs.reduce((s, b) => s + (b.bytes || 0), 0);
       const fmtBytes = (n) => n < 1024 ? n + ' Б' : n < 1024*1024 ? (n/1024).toFixed(0) + ' КБ' : (n/1024/1024).toFixed(1) + ' МБ';
       summaryEl.innerHTML = `
-        Карточек: <span class="n">${cards.length}</span><br>
-        Визитов: <span class="n">${visits.length}</span><br>
-        Медиа: <span class="n">${blobs.length}</span> файл${blobs.length === 1 ? '' : 'ов'} · <span class="n">${fmtBytes(mediaBytes)}</span>
+        В файле: <span class="n">${cards.length}</span> карточек · <span class="n">${visits.length}</span> визитов · <span class="n">${blobs.length}</span> медиа · <span class="n">${fmtBytes(fileBlob.size)}</span>
       `;
       summaryEl.hidden = false;
-
-      // 7. Now that the SW is registered and engagement is real, ask Chromium
-      //    to actually install the PWA so the user gets an icon in dock/menu.
-      //    Give the event a beat to fire (it usually arrives during SW registration).
-      setStatus('Шаг 4 из 4', 'Ставлю иконкой на рабочий стол…');
-      if (!deferredInstallPrompt) {
-        await new Promise(r => setTimeout(r, 600));
-      }
-      if (deferredInstallPrompt) {
-        try {
-          deferredInstallPrompt.prompt();
-          const choice = await deferredInstallPrompt.userChoice;
-          deferredInstallPrompt = null;
-          if (choice.outcome === 'accepted') {
-            setStatus('Готово', 'Установлено! Ищите иконку «Автосервис» на рабочем столе или в Dock — открывайте приложение оттуда.', 'ok');
-            helpEl.hidden = true;
-            installBtn.hidden = true;
-            openBtn.hidden = false;
-            openBtn.textContent = 'Открыть приложение сейчас';
-            return; // don't auto-redirect; let the user click into the installed window
-          }
-          // dismissed → fall through to manual instructions + browser-tab fallback
-        } catch (err) {
-          console.warn('install prompt failed:', err);
-        }
-      }
-      // Either no programmatic prompt was offered, or the user dismissed it.
-      // Show the platform-specific manual recipe and offer to open the app in
-      // the current tab anyway — the data is local either way.
-      helpEl.innerHTML = `
-        <b>Как поставить иконкой на рабочий стол:</b><br>
-        ${manualInstallHelp()}<br><br>
-        База уже у вас на компьютере — приложение работает без интернета. Иконка добавляется отдельно через меню браузера.
-      `;
       helpEl.hidden = false;
       installBtn.hidden = true;
       openBtn.hidden = false;
-      openBtn.textContent = 'Открыть приложение';
-      setStatus('Готово', 'База перенесена. Жмите «Открыть приложение» или поставьте иконкой по инструкции ниже.', 'ok');
+      setStatus('Готово', 'Файл <b>autoservice.html</b> скачался. Откройте его двойным кликом — приложение запустится локально, в адресной строке будет <code>file:///…</code>.', 'ok');
     } catch (err) {
       console.error(err);
       setStatus('Ошибка', err.message || String(err), 'err');
